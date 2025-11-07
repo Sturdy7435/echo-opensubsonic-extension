@@ -9,7 +9,7 @@ import okhttp3.Request
 
 // For more information on which clients to use
 // visit https://brahmkshatriya.github.io/echo/common/dev.brahmkshatriya.echo.common/
-class TestExtension : ExtensionClient {
+class OpenSubsonicExtension : ExtensionClient {
 
     // Hover the function to see their documentation, you can click on highlighted class names
     // to see their documentation as well.
