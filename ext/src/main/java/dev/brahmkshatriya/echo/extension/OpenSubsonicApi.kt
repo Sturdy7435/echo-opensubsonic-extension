@@ -129,7 +129,8 @@ class OpenSubsonicApi {
         username: String? = null,
         password: String? = null,
     ): Response {
-        checkAuth()
+        // TODO: refactor login code and re-enable this check
+        // checkAuth()
 
         val u: String = username ?: userCredentials.username
         val p: String = password ?: userCredentials.password
