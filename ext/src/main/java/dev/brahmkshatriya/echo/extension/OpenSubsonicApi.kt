@@ -40,7 +40,13 @@ class OpenSubsonicApi {
     // Login
 
     suspend fun onPasswordLogin(data: Map<String, String?>): List<User> {
-        val loginResp = authenticatedGet("getUser", mapOf("user" to data["user"].toString()))
+        val loginResp = authenticatedGet(
+            endpoint = "getUser",
+            parameters = mapOf("user" to data["username"]!!),
+            serverUrl = data["address"],
+            username = data["username"],
+            password = data["password"],
+        )
         if (loginResp.code == 401) {
             throw Exception("Invalid credentials")
         }
@@ -119,18 +125,22 @@ class OpenSubsonicApi {
         parameters: Map<String, String> = mapOf(),
         headers: Headers = DEFAULT_HEADERS,
         cache: CacheControl = DEFAULT_CACHE_CONTROL,
+        serverUrl: String? = null,
+        username: String? = null,
+        password: String? = null,
     ): Response {
         checkAuth()
 
-        val username: String = userCredentials.username
-        val password: String = userCredentials.password
+        val u: String = username ?: userCredentials.username
+        val p: String = password ?: userCredentials.password
         val salt: String = generateSalt()
-        val token: String = computeToken(password, salt)
+        val token: String = computeToken(p, salt)
 
-        val url = getUrlBuilder().apply {
+        val url = serverUrl?.toHttpUrl()?.newBuilder() ?: getUrlBuilder()
+        val builtUrl = url.apply {
             addPathSegment("rest")
             addPathSegment(endpoint)
-            addQueryParameter("u", username)
+            addQueryParameter("u", u)
             addQueryParameter("t", token)
             addQueryParameter("s", salt)
             addQueryParameter("v", API_VERSION)
@@ -139,7 +149,7 @@ class OpenSubsonicApi {
             parameters.forEach { addQueryParameter(it.key, it.value) }
         }.build()
 
-        return client.get(url, headers, cache)
+        return client.get(builtUrl, headers, cache)
     }
 
     private inline fun <reified T> Response.parseAs(): T {
