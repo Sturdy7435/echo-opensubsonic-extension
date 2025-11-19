@@ -13,7 +13,7 @@ data class LoginDto(
         @Serializable
         class UserDto(
             val username: String,
-            val email: String
+            val email: String? = null
         )
     }
 }

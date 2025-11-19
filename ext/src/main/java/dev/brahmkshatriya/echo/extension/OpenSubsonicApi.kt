@@ -57,7 +57,7 @@ class OpenSubsonicApi {
             id = loginData.subsonicResponse.user.username,
             name = loginData.subsonicResponse.user.username,
             cover = null,
-            subtitle = null,
+            subtitle = loginData.subsonicResponse.user.email,
             extras = mapOf(
                 "password" to "",
                 "apiKey" to "",
