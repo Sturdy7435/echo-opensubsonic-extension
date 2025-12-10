@@ -53,7 +53,9 @@ fun computeToken(password: String, salt: String): String {
     val md = MessageDigest.getInstance("MD5")
     val input = (password + salt).toByteArray(UTF_8)
 
-    return md.digest(input).toString()
+    return md.digest(input).joinToString("") {
+        "%02x".format(it)
+    }
 }
 
 val DEFAULT_CACHE_CONTROL = CacheControl.Builder().maxAge(10, MINUTES).build()
