@@ -11,11 +11,18 @@ data class LoginDto(
 
 @Serializable
 data class SubsonicResponseDto(
-    val user: UserDto
+    val user: UserDto? = null,
+    val error: ErrorDto? = null,
 )
 
 @Serializable
 data class UserDto(
     val username: String,
     val email: String? = null
+)
+
+@Serializable
+data class ErrorDto(
+    val code: Int,
+    val message: String,
 )

@@ -44,14 +44,18 @@ class OpenSubsonicApi {
             username = data["username"],
             password = data["password"],
         )
-        if (loginResp.code == 401) {
-            throw Exception("Invalid credentials")
-        }
 
         val loginData = loginResp.parseAs<LoginDto>()
 
+        // TODO: Move to an handleError function
+        if (loginData.subsonicResponse.error != null) {
+            when (loginData.subsonicResponse.error.code) {
+                40 -> throw Exception("Invalid credentials")
+            }
+        }
+
         val user = User(
-            id = loginData.subsonicResponse.user.username,
+            id = loginData.subsonicResponse.user!!.username,
             name = loginData.subsonicResponse.user.username,
             cover = null,
             subtitle = loginData.subsonicResponse.user.email,
