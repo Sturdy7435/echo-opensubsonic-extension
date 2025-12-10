@@ -4,18 +4,18 @@ import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.extension.dto.LoginDto
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
+//import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import okhttp3.CacheControl
 import okhttp3.Headers
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
-import okhttp3.MediaType.Companion.toMediaType
+//import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
-import okhttp3.RequestBody
+//import okhttp3.RequestBody
 import okhttp3.Response
-import okhttp3.RequestBody.Companion.toRequestBody as asRequestBody
+//import okhttp3.RequestBody.Companion.toRequestBody as asRequestBody
 
 @OptIn(ExperimentalSerializationApi::class)
 class OpenSubsonicApi {
@@ -25,16 +25,13 @@ class OpenSubsonicApi {
         private const val RESPONSE_FORMAT: String = "json"
     }
 
-    // Create an instance of Json with custom options
-    private val json = Json {
-        ignoreUnknownKeys = true
-        namingStrategy = KebabCaseToCamelCase
-    }
-
-    // Initialize the user credentials
     private var userCredentials = UserCredentials.EMPTY
 
-    // Create a simple instance for okhttp3
+    private val json = Json {
+        ignoreUnknownKeys = true
+        // namingStrategy = KebabCaseToCamelCase
+    }
+
     private val client = OkHttpClient()
 
     // Login
@@ -59,9 +56,9 @@ class OpenSubsonicApi {
             cover = null,
             subtitle = loginData.subsonicResponse.user.email,
             extras = mapOf(
-                "password" to "",
+                "password" to data["password"]!!,
                 "apiKey" to "",
-                "serverUrl" to "",
+                "serverUrl" to data["address"]!!,
             ),
         )
 
@@ -72,10 +69,10 @@ class OpenSubsonicApi {
         userCredentials = user?.let {
             UserCredentials(
                 username = it.name,
-                password = it.extras["password"]!!,
-                apiKey = it.extras["apiKey"]!!,
+                password = it.extras["password"],
+                apiKey = it.extras["apiKey"],
                 serverUrl = it.extras["serverUrl"]!!,
-                email = it.subtitle ?: ""
+                email = it.subtitle
             )
         } ?: UserCredentials.EMPTY
     }
@@ -91,11 +88,11 @@ class OpenSubsonicApi {
             id = userCredentials.username,
             name = userCredentials.username,
             cover = null,
-            subtitle = userCredentials.email.ifEmpty { null },
+            subtitle = userCredentials.email?.ifEmpty { null },
             extras = mapOf(
-                "password" to userCredentials.password,
-                "apiKey" to userCredentials.apiKey,
-                "serverUrl" to userCredentials.serverUrl
+                "password" to (userCredentials.password ?: ""),
+                "apiKey" to (userCredentials.apiKey ?: ""),
+                "serverUrl" to userCredentials.serverUrl,
             )
         )
     }
@@ -115,7 +112,7 @@ class OpenSubsonicApi {
     */
 
     fun checkAuth() {
-        if (userCredentials.serverUrl.isEmpty() || (userCredentials.password.isEmpty() && userCredentials.apiKey.isEmpty())) {
+        if (userCredentials.serverUrl.isEmpty() || (userCredentials.password?.isEmpty() == true && userCredentials.apiKey?.isEmpty() == true)) {
             throw ClientException.LoginRequired()
         }
     }
@@ -133,7 +130,7 @@ class OpenSubsonicApi {
         // checkAuth()
 
         val u: String = username ?: userCredentials.username
-        val p: String = password ?: userCredentials.password
+        val p: String = password ?: userCredentials.password ?: ""
         val salt: String = generateSalt()
         val token: String = computeToken(p, salt)
 
@@ -157,25 +154,29 @@ class OpenSubsonicApi {
         return json.decodeFromStream(body.byteStream())
     }
 
+    /*
     private inline fun <reified T> Response.parseAs(serializer: KSerializer<T>): T {
         return json.decodeFromStream(serializer, body.byteStream())
     }
+    */
 
+    /*
     private inline fun <reified T> T.toRequestBody(): RequestBody {
         return json.encodeToString(this).asRequestBody(
             "application/json".toMediaType(),
         )
     }
+    */
 }
 
 data class UserCredentials(
     val username: String,
-    val password: String,
-    val apiKey: String,
+    val password: String?,
+    val apiKey: String?,
     val serverUrl: String,
-    val email: String
+    val email: String?
 ) {
     companion object {
-        val EMPTY = UserCredentials("", "", "", "", "")
+        val EMPTY = UserCredentials("", null, null, "", null)
     }
 }
