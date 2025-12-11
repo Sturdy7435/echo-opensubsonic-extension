@@ -2,7 +2,9 @@ package dev.brahmkshatriya.echo.extension
 
 import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.models.User
+import dev.brahmkshatriya.echo.extension.dto.ErrorDto
 import dev.brahmkshatriya.echo.extension.dto.LoginDto
+import dev.brahmkshatriya.echo.extension.dto.TokenInfoDto
 import kotlinx.serialization.ExperimentalSerializationApi
 //import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -15,6 +17,9 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 //import okhttp3.RequestBody
 import okhttp3.Response
+import java.net.UnknownHostException
+import java.net.http.HttpResponse
+
 //import okhttp3.RequestBody.Companion.toRequestBody as asRequestBody
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -23,6 +28,11 @@ class OpenSubsonicApi {
         private const val API_VERSION: String = "1"
         private const val CLIENT_NAME: String = "Echo nightly"
         private const val RESPONSE_FORMAT: String = "json"
+        private val COMMON_PARAMETERS: Map<String, String> = mapOf(
+            "v" to API_VERSION,
+            "c" to CLIENT_NAME,
+            "f" to RESPONSE_FORMAT,
+        )
     }
 
     private var userCredentials = UserCredentials.EMPTY
@@ -37,32 +47,101 @@ class OpenSubsonicApi {
     // Login
 
     suspend fun onPasswordLogin(data: Map<String, String?>): List<User> {
-        val loginResp = authenticatedGet(
-            endpoint = "getUser",
-            parameters = mapOf("user" to data["username"]!!),
-            serverUrl = data["address"],
-            username = data["username"],
-            password = data["password"],
-        )
+        val u: String = data["username"]!!
+        val p: String = data["password"]!!
+        val url: String = data["address"]!!
 
-        val loginData = loginResp.parseAs<LoginDto>()
+        val s: String = generateSalt()
+        val t: String = computeToken(p, s)
 
-        // TODO: Move to an handleError function
-        if (loginData.subsonicResponse.error != null) {
-            when (loginData.subsonicResponse.error.code) {
-                40 -> throw Exception("Invalid credentials")
-            }
+        val resp: Response
+        try {
+            resp = client.get(
+                url = url.toHttpUrl().newBuilder().apply {
+                    addPathSegments("rest/getUser")
+
+                    addQueryParameter("u", u)
+                    addQueryParameter("t", t)
+                    addQueryParameter("s", s)
+                    addQueryParameter("user", u)
+                    COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
+                }.build()
+            )
+        } catch (_: UnknownHostException) {
+            throw Exception("Invalid server address")
+        }
+        if (resp.code == 404) {
+            throw Exception("Invalid server address")
+        }
+
+        val loginData = resp.parseAs<LoginDto>().subsonicResponse
+        if (loginData.status != "ok") {
+            handleError(loginData.error)
         }
 
         val user = User(
-            id = loginData.subsonicResponse.user!!.username,
-            name = loginData.subsonicResponse.user.username,
+            id = u,
+            name = u,
             cover = null,
-            subtitle = loginData.subsonicResponse.user.email,
+            subtitle = loginData.user?.email,
             extras = mapOf(
-                "password" to data["password"]!!,
-                "apiKey" to "",
-                "serverUrl" to data["address"]!!,
+                "serverUrl" to url,
+                "password" to p,
+            ),
+        )
+
+        return listOf(user)
+    }
+
+    suspend fun onKeyLogin(data: Map<String, String?>): List<User> {
+        val k: String = data["apiKey"]!!
+        val url: String = data["address"]!!
+
+        val resp: Response
+        try {
+            resp = client.get(
+                url = url.toHttpUrl().newBuilder().apply {
+                    addPathSegments("rest/tokenInfo")
+
+                    addQueryParameter("apiKey", k)
+                    COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
+                }.build()
+            )
+        } catch (_: UnknownHostException) {
+            throw Exception("Invalid server address")
+        }
+        if (resp.code == 404) {
+            throw Exception("Invalid server address")
+        }
+
+        val respData = resp.parseAs<TokenInfoDto>().subsonicResponse
+        if (respData.status != "ok") {
+            handleError(respData.error)
+        }
+        val username = respData.tokenInfo!!.username
+
+        val resp1 = client.get(
+            url = url.toHttpUrl().newBuilder().apply {
+                addPathSegments("rest/tokenInfo")
+
+                addQueryParameter("apiKey", k)
+                addQueryParameter("user", username)
+                COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
+            }.build()
+        )
+        val loginData = resp1.parseAs<LoginDto>().subsonicResponse
+        if (loginData.status != "ok") {
+            handleError(loginData.error)
+        }
+
+        val user = User(
+            id = username,
+            name = username,
+            cover = null,
+            subtitle = loginData.user?.email,
+            extras = mapOf(
+                "serverUrl" to url,
+                "apiKey" to k,
             ),
         )
 
@@ -73,10 +152,10 @@ class OpenSubsonicApi {
         userCredentials = user?.let {
             UserCredentials(
                 username = it.name,
+                email = it.subtitle,
+                serverUrl = it.extras["serverUrl"],
                 password = it.extras["password"],
                 apiKey = it.extras["apiKey"],
-                serverUrl = it.extras["serverUrl"]!!,
-                email = it.subtitle
             )
         } ?: UserCredentials.EMPTY
     }
@@ -92,31 +171,31 @@ class OpenSubsonicApi {
             id = userCredentials.username,
             name = userCredentials.username,
             cover = null,
-            subtitle = userCredentials.email?.ifEmpty { null },
+            subtitle = userCredentials.email,
             extras = mapOf(
-                "password" to (userCredentials.password ?: ""),
-                "apiKey" to (userCredentials.apiKey ?: ""),
+                "password" to userCredentials.password,
+                "apiKey" to userCredentials.apiKey,
                 "serverUrl" to userCredentials.serverUrl,
-            )
+            ).mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
         )
     }
 
     // Utils
 
-    fun getUrlBuilder(): HttpUrl.Builder {
-        return userCredentials.serverUrl.toHttpUrl().newBuilder()
-    }
-
-    /*
-    fun getRestUrlBuilder(): HttpUrl.Builder {
-        return getServerUrlBuilder().apply {
-            addPathSegment("rest")
+    fun handleError(error: ErrorDto?) {
+        when (error?.code) {
+            40 -> throw Exception("Invalid credentials")
+            44 -> throw Exception("Invalid API key")
         }
     }
-    */
+
+    fun getUrlBuilder(): HttpUrl.Builder {
+        checkAuth()
+        return userCredentials.serverUrl!!.toHttpUrl().newBuilder()
+    }
 
     fun checkAuth() {
-        if (userCredentials.serverUrl.isEmpty() || (userCredentials.password?.isEmpty() == true && userCredentials.apiKey?.isEmpty() == true)) {
+        if (userCredentials.serverUrl == null || (userCredentials.password == null && userCredentials.apiKey == null)) {
             throw ClientException.LoginRequired()
         }
     }
@@ -126,32 +205,34 @@ class OpenSubsonicApi {
         parameters: Map<String, String> = mapOf(),
         headers: Headers = DEFAULT_HEADERS,
         cache: CacheControl = DEFAULT_CACHE_CONTROL,
-        serverUrl: String? = null,
-        username: String? = null,
-        password: String? = null,
     ): Response {
-        // TODO: refactor login code and re-enable this check
-        // checkAuth()
+        checkAuth()
 
-        val u: String = username ?: userCredentials.username
-        val p: String = password ?: userCredentials.password ?: ""
-        val salt: String = generateSalt()
-        val token: String = computeToken(p, salt)
+        val p: String? = userCredentials.password
+        val k: String? = userCredentials.apiKey
 
-        val url = serverUrl?.toHttpUrl()?.newBuilder() ?: getUrlBuilder()
-        val builtUrl = url.apply {
+        var salt: String? = null
+        var token: String? = null
+        if (p != null) {
+            salt = generateSalt()
+            token = computeToken(p, salt)
+        }
+
+        val url = getUrlBuilder().apply {
             addPathSegment("rest")
             addPathSegment(endpoint)
-            addQueryParameter("u", u)
-            addQueryParameter("t", token)
-            addQueryParameter("s", salt)
-            addQueryParameter("v", API_VERSION)
-            addQueryParameter("c", CLIENT_NAME)
-            addQueryParameter("f", RESPONSE_FORMAT)
-            parameters.forEach { addQueryParameter(it.key, it.value) }
+
+            if (p != null) {
+                addQueryParameter("u", userCredentials.username)
+                addQueryParameter("t", token)
+                addQueryParameter("s", salt)
+            } else {
+                addQueryParameter("apiKey", k)
+            }
+            (COMMON_PARAMETERS + parameters).forEach { addQueryParameter(it.key, it.value) }
         }.build()
 
-        return client.get(builtUrl, headers, cache)
+        return client.get(url, headers, cache)
     }
 
     private inline fun <reified T> Response.parseAs(): T {
@@ -175,12 +256,12 @@ class OpenSubsonicApi {
 
 data class UserCredentials(
     val username: String,
+    val email: String?,
+    val serverUrl: String?,
     val password: String?,
     val apiKey: String?,
-    val serverUrl: String,
-    val email: String?
 ) {
     companion object {
-        val EMPTY = UserCredentials("", null, null, "", null)
+        val EMPTY = UserCredentials("", null, null, null, null)
     }
 }

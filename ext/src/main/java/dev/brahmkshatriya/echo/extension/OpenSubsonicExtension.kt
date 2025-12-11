@@ -30,7 +30,7 @@ class OpenSubsonicExtension :
 
     enum class LoginType {
         UserPass,
-        //ApiKey,
+        ApiKey,
     }
 
     override val forms: List<LoginClient.Form> = listOf(
@@ -59,7 +59,6 @@ class OpenSubsonicExtension :
                 ),
             ),
         ),
-        /*
         LoginClient.Form(
             key = LoginType.ApiKey.name,
             label = "API Key",
@@ -79,7 +78,6 @@ class OpenSubsonicExtension :
                 ),
             ),
         ),
-        */
     )
 
     override suspend fun onLogin(
@@ -91,10 +89,9 @@ class OpenSubsonicExtension :
                 api.onPasswordLogin(data)
             }
 
-            // TODO: Implement functions for pw and key logins
-            /*LoginType.ApiKey -> {
-                api.onApiLogin(data)
-            }*/
+            LoginType.ApiKey -> {
+                api.onKeyLogin(data)
+            }
         }
     }
 
