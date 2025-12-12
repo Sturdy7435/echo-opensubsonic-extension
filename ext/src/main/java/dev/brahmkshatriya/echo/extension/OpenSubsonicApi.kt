@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.extension
 import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
+import dev.brahmkshatriya.echo.common.models.NetworkRequest
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.extension.dto.ErrorDto
 import dev.brahmkshatriya.echo.extension.dto.LoginDto
@@ -85,17 +86,20 @@ class OpenSubsonicApi {
 
         s = generateSalt()
         t = computeToken(p, s)
-        val avatar: ImageHolder = client.get(
-            url = url.toHttpUrl().newBuilder().apply {
-                addPathSegments("rest/getAvatar")
+        val avatar: ImageHolder = ImageHolder.NetworkRequestImageHolder(
+            NetworkRequest(
+                url.toHttpUrl().newBuilder().apply {
+                    addPathSegments("rest/getAvatar")
 
-                addQueryParameter("u", u)
-                addQueryParameter("t", t)
-                addQueryParameter("s", s)
-                addQueryParameter("username", u)
-                COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
-            }.build()
-        ).body.string().toImageHolder()
+                    addQueryParameter("u", u)
+                    addQueryParameter("t", t)
+                    addQueryParameter("s", s)
+                    addQueryParameter("username", u)
+                    COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
+                }.toString()
+            ),
+            crop = false
+        )
 
         val user = User(
             id = u,
@@ -152,15 +156,18 @@ class OpenSubsonicApi {
             handleError(loginData.error)
         }
 
-        val avatar: ImageHolder = client.get(
-            url = url.toHttpUrl().newBuilder().apply {
-                addPathSegments("rest/getAvatar")
+        val avatar: ImageHolder = ImageHolder.NetworkRequestImageHolder(
+            NetworkRequest(
+                url.toHttpUrl().newBuilder().apply {
+                    addPathSegments("rest/getAvatar")
 
-                addQueryParameter("apiKey", k)
-                addQueryParameter("username", username)
-                COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
-            }.build()
-        ).body.string().toImageHolder()
+                    addQueryParameter("apiKey", k)
+                    addQueryParameter("username", username)
+                    COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
+                }.toString()
+            ),
+            crop = false
+        )
 
         val user = User(
             id = username,
