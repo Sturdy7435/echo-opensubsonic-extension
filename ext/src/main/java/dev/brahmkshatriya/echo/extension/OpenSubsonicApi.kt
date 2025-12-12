@@ -1,6 +1,8 @@
 package dev.brahmkshatriya.echo.extension
 
 import dev.brahmkshatriya.echo.common.helpers.ClientException
+import dev.brahmkshatriya.echo.common.models.ImageHolder
+import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.extension.dto.ErrorDto
 import dev.brahmkshatriya.echo.extension.dto.LoginDto
@@ -10,11 +12,13 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import okhttp3.CacheControl
+import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 //import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 //import okhttp3.RequestBody
 import okhttp3.Response
 import java.net.UnknownHostException
@@ -51,8 +55,8 @@ class OpenSubsonicApi {
         val p: String = data["password"]!!
         val url: String = data["address"]!!
 
-        val s: String = generateSalt()
-        val t: String = computeToken(p, s)
+        var s: String = generateSalt()
+        var t: String = computeToken(p, s)
 
         val resp: Response
         try {
@@ -79,10 +83,24 @@ class OpenSubsonicApi {
             handleError(loginData.error)
         }
 
+        s = generateSalt()
+        t = computeToken(p, s)
+        val avatar: ImageHolder = client.get(
+            url = url.toHttpUrl().newBuilder().apply {
+                addPathSegments("rest/getAvatar")
+
+                addQueryParameter("u", u)
+                addQueryParameter("t", t)
+                addQueryParameter("s", s)
+                addQueryParameter("username", u)
+                COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
+            }.build()
+        ).body.string().toImageHolder()
+
         val user = User(
             id = u,
             name = u,
-            cover = null,
+            cover = avatar,
             subtitle = loginData.user?.email,
             extras = mapOf(
                 "serverUrl" to url,
@@ -122,7 +140,7 @@ class OpenSubsonicApi {
 
         val resp1 = client.get(
             url = url.toHttpUrl().newBuilder().apply {
-                addPathSegments("rest/tokenInfo")
+                addPathSegments("rest/getUser")
 
                 addQueryParameter("apiKey", k)
                 addQueryParameter("user", username)
@@ -134,10 +152,20 @@ class OpenSubsonicApi {
             handleError(loginData.error)
         }
 
+        val avatar: ImageHolder = client.get(
+            url = url.toHttpUrl().newBuilder().apply {
+                addPathSegments("rest/getAvatar")
+
+                addQueryParameter("apiKey", k)
+                addQueryParameter("username", username)
+                COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
+            }.build()
+        ).body.string().toImageHolder()
+
         val user = User(
             id = username,
             name = username,
-            cover = null,
+            cover = avatar,
             subtitle = loginData.user?.email,
             extras = mapOf(
                 "serverUrl" to url,
@@ -153,6 +181,7 @@ class OpenSubsonicApi {
             UserCredentials(
                 username = it.name,
                 email = it.subtitle,
+                avatar = it.cover,
                 serverUrl = it.extras["serverUrl"],
                 password = it.extras["password"],
                 apiKey = it.extras["apiKey"],
@@ -170,7 +199,7 @@ class OpenSubsonicApi {
         return User(
             id = userCredentials.username,
             name = userCredentials.username,
-            cover = null,
+            cover = userCredentials.avatar,
             subtitle = userCredentials.email,
             extras = mapOf(
                 "password" to userCredentials.password,
@@ -203,8 +232,8 @@ class OpenSubsonicApi {
     suspend fun authenticatedGet(
         endpoint: String,
         parameters: Map<String, String> = mapOf(),
-        headers: Headers = DEFAULT_HEADERS,
-        cache: CacheControl = DEFAULT_CACHE_CONTROL,
+        //headers: Headers = DEFAULT_HEADERS,
+        //cache: CacheControl = DEFAULT_CACHE_CONTROL,
     ): Response {
         checkAuth()
 
@@ -232,7 +261,44 @@ class OpenSubsonicApi {
             (COMMON_PARAMETERS + parameters).forEach { addQueryParameter(it.key, it.value) }
         }.build()
 
-        return client.get(url, headers, cache)
+        return client.get(url = url)
+    }
+
+    suspend fun authenticatedPost(
+        endpoint: String,
+        parameters: Map<String, String> = mapOf(),
+        //headers: Headers = DEFAULT_HEADERS,
+        //cache: CacheControl = DEFAULT_CACHE_CONTROL,
+    ): Response {
+        checkAuth()
+
+        val p: String? = userCredentials.password
+        val k: String? = userCredentials.apiKey
+
+        var salt: String? = null
+        var token: String? = null
+        if (p != null) {
+            salt = generateSalt()
+            token = computeToken(p, salt)
+        }
+
+        val url = getUrlBuilder().apply {
+            addPathSegment("rest")
+            addPathSegment(endpoint)
+        }.build()
+
+        val body = FormBody.Builder().apply {
+            if (p != null) {
+                add("u", userCredentials.username)
+                add("t", token!!)
+                add("s", salt!!)
+            } else {
+                add("apiKey", k!!)
+            }
+            (COMMON_PARAMETERS + parameters).forEach { add(it.key, it.value) }
+        }.build()
+
+        return client.post(url = url, body = body)
     }
 
     private inline fun <reified T> Response.parseAs(): T {
@@ -257,11 +323,12 @@ class OpenSubsonicApi {
 data class UserCredentials(
     val username: String,
     val email: String?,
+    val avatar: ImageHolder?,
     val serverUrl: String?,
     val password: String?,
     val apiKey: String?,
 ) {
     companion object {
-        val EMPTY = UserCredentials("", null, null, null, null)
+        val EMPTY = UserCredentials("", null, null, null, null, null)
     }
 }

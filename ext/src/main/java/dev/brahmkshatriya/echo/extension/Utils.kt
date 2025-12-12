@@ -5,12 +5,12 @@ import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.awa
 //import kotlinx.serialization.descriptors.SerialDescriptor
 //import kotlinx.serialization.json.JsonNamingStrategy
 import okhttp3.CacheControl
-//import okhttp3.FormBody
+import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
-//import okhttp3.RequestBody
+import okhttp3.RequestBody
 import okhttp3.Response
 import java.util.concurrent.TimeUnit.MINUTES
 import java.security.MessageDigest
@@ -60,7 +60,7 @@ fun computeToken(password: String, salt: String): String {
 
 val DEFAULT_CACHE_CONTROL = CacheControl.Builder().maxAge(10, MINUTES).build()
 val DEFAULT_HEADERS = Headers.Builder().build()
-//val DEFAULT_BODY: RequestBody = FormBody.Builder().build()
+val DEFAULT_BODY: RequestBody = FormBody.Builder().build()
 
 suspend fun OkHttpClient.get(
     url: HttpUrl,
@@ -76,7 +76,6 @@ suspend fun OkHttpClient.get(
     ).await()
 }
 
-/*
 suspend fun OkHttpClient.post(
     url: HttpUrl,
     headers: Headers = DEFAULT_HEADERS,
@@ -92,4 +91,3 @@ suspend fun OkHttpClient.post(
             .build(),
     ).await()
 }
-*/
