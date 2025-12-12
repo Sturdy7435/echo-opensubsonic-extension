@@ -2,7 +2,6 @@ package dev.brahmkshatriya.echo.extension
 
 import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.models.ImageHolder
-import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.NetworkRequest
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.extension.dto.ErrorDto
@@ -12,18 +11,14 @@ import kotlinx.serialization.ExperimentalSerializationApi
 //import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import okhttp3.CacheControl
 import okhttp3.FormBody
-import okhttp3.Headers
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 //import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
-import okhttp3.RequestBody
 //import okhttp3.RequestBody
 import okhttp3.Response
 import java.net.UnknownHostException
-import java.net.http.HttpResponse
 
 //import okhttp3.RequestBody.Companion.toRequestBody as asRequestBody
 
@@ -40,7 +35,7 @@ class OpenSubsonicApi {
         )
     }
 
-    private var userCredentials = UserCredentials.EMPTY
+    private var userData = UserData.EMPTY
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -184,8 +179,8 @@ class OpenSubsonicApi {
     }
 
     fun setUser(user: User?) {
-        userCredentials = user?.let {
-            UserCredentials(
+        userData = user?.let {
+            UserData(
                 username = it.name,
                 email = it.subtitle,
                 avatar = it.cover,
@@ -193,7 +188,7 @@ class OpenSubsonicApi {
                 password = it.extras["password"],
                 apiKey = it.extras["apiKey"],
             )
-        } ?: UserCredentials.EMPTY
+        } ?: UserData.EMPTY
     }
 
     fun getUser(): User? {
@@ -204,14 +199,14 @@ class OpenSubsonicApi {
         }
 
         return User(
-            id = userCredentials.username,
-            name = userCredentials.username,
-            cover = userCredentials.avatar,
-            subtitle = userCredentials.email,
+            id = userData.username,
+            name = userData.username,
+            cover = userData.avatar,
+            subtitle = userData.email,
             extras = mapOf(
-                "password" to userCredentials.password,
-                "apiKey" to userCredentials.apiKey,
-                "serverUrl" to userCredentials.serverUrl,
+                "password" to userData.password,
+                "apiKey" to userData.apiKey,
+                "serverUrl" to userData.serverUrl,
             ).mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
         )
     }
@@ -221,17 +216,18 @@ class OpenSubsonicApi {
     fun handleError(error: ErrorDto?) {
         when (error?.code) {
             40 -> throw Exception("Invalid credentials")
+            41 or 42 -> throw Exception("Login method not supported")
             44 -> throw Exception("Invalid API key")
         }
     }
 
     fun getUrlBuilder(): HttpUrl.Builder {
         checkAuth()
-        return userCredentials.serverUrl!!.toHttpUrl().newBuilder()
+        return userData.serverUrl!!.toHttpUrl().newBuilder()
     }
 
     fun checkAuth() {
-        if (userCredentials.serverUrl == null || (userCredentials.password == null && userCredentials.apiKey == null)) {
+        if (userData.serverUrl == null || (userData.password == null && userData.apiKey == null)) {
             throw ClientException.LoginRequired()
         }
     }
@@ -244,8 +240,8 @@ class OpenSubsonicApi {
     ): Response {
         checkAuth()
 
-        val p: String? = userCredentials.password
-        val k: String? = userCredentials.apiKey
+        val p: String? = userData.password
+        val k: String? = userData.apiKey
 
         var salt: String? = null
         var token: String? = null
@@ -259,7 +255,7 @@ class OpenSubsonicApi {
             addPathSegment(endpoint)
 
             if (p != null) {
-                addQueryParameter("u", userCredentials.username)
+                addQueryParameter("u", userData.username)
                 addQueryParameter("t", token)
                 addQueryParameter("s", salt)
             } else {
@@ -279,8 +275,8 @@ class OpenSubsonicApi {
     ): Response {
         checkAuth()
 
-        val p: String? = userCredentials.password
-        val k: String? = userCredentials.apiKey
+        val p: String? = userData.password
+        val k: String? = userData.apiKey
 
         var salt: String? = null
         var token: String? = null
@@ -296,7 +292,7 @@ class OpenSubsonicApi {
 
         val body = FormBody.Builder().apply {
             if (p != null) {
-                add("u", userCredentials.username)
+                add("u", userData.username)
                 add("t", token!!)
                 add("s", salt!!)
             } else {
@@ -327,7 +323,7 @@ class OpenSubsonicApi {
     */
 }
 
-data class UserCredentials(
+data class UserData(
     val username: String,
     val email: String?,
     val avatar: ImageHolder?,
@@ -336,6 +332,6 @@ data class UserCredentials(
     val apiKey: String?,
 ) {
     companion object {
-        val EMPTY = UserCredentials("", null, null, null, null, null)
+        val EMPTY = UserData("", null, null, null, null, null)
     }
 }

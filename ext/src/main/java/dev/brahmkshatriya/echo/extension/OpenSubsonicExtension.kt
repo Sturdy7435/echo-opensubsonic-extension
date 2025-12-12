@@ -62,7 +62,7 @@ class OpenSubsonicExtension :
         LoginClient.Form(
             key = LoginType.ApiKey.name,
             label = "API Key",
-            icon = LoginClient.InputField.Type.Misc,
+            icon = LoginClient.InputField.Type.Password,
             inputFields = listOf(
                 LoginClient.InputField(
                     type = LoginClient.InputField.Type.Url,
