@@ -77,7 +77,7 @@ class OpenSubsonicApi {
             .subsonicResponse.openSubsonicExtensions!!
         val extensions: EnumSet<Server.Extension> = EnumSet.noneOf(Server.Extension::class.java)
         extensionList.forEach {
-            extensions.add(Server.Extension.valueOf(it.name))
+            extensions.add(Server.Extension.valueOf(it.name.replaceFirstChar { it.uppercase() }))
         }
 
         resp = client.get(
