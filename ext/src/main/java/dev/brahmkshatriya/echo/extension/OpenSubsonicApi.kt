@@ -5,6 +5,7 @@ import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.NetworkRequest
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.extension.dto.ErrorDto
+import dev.brahmkshatriya.echo.extension.dto.GetOpenSubsonicExtensionsDto
 import dev.brahmkshatriya.echo.extension.dto.LoginDto
 import dev.brahmkshatriya.echo.extension.dto.TokenInfoDto
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -17,10 +18,12 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 //import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 //import okhttp3.RequestBody
+//import okhttp3.RequestBody.Companion.toRequestBody as asRequestBody
 import okhttp3.Response
 import java.net.UnknownHostException
+import java.util.EnumSet
+import kotlin.enums.enumEntries
 
-//import okhttp3.RequestBody.Companion.toRequestBody as asRequestBody
 
 @OptIn(ExperimentalSerializationApi::class)
 class OpenSubsonicApi {
@@ -54,16 +57,11 @@ class OpenSubsonicApi {
         var s: String = generateSalt()
         var t: String = computeToken(p, s)
 
-        val resp: Response
+        var resp: Response
         try {
             resp = client.get(
                 url = url.toHttpUrl().newBuilder().apply {
-                    addPathSegments("rest/getUser")
-
-                    addQueryParameter("u", u)
-                    addQueryParameter("t", t)
-                    addQueryParameter("s", s)
-                    addQueryParameter("user", u)
+                    addPathSegments("rest/getOpenSubsonicExtensions")
                     COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
                 }.build()
             )
@@ -73,6 +71,26 @@ class OpenSubsonicApi {
         if (resp.code == 404) {
             throw Exception("Invalid server address")
         }
+
+        // TODO: add error handling
+        val extensionList = resp.parseAs<GetOpenSubsonicExtensionsDto>()
+            .subsonicResponse.openSubsonicExtensions!!
+        val extensions: EnumSet<Server.Extension> = EnumSet.noneOf(Server.Extension::class.java)
+        extensionList.forEach {
+            extensions.add(Server.Extension.valueOf(it.name))
+        }
+
+        resp = client.get(
+            url = url.toHttpUrl().newBuilder().apply {
+                addPathSegments("rest/getUser")
+
+                addQueryParameter("u", u)
+                addQueryParameter("t", t)
+                addQueryParameter("s", s)
+                addQueryParameter("user", u)
+                COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
+            }.build()
+        )
 
         val loginData = resp.parseAs<LoginDto>().subsonicResponse
         if (loginData.status != "ok") {
@@ -102,8 +120,9 @@ class OpenSubsonicApi {
             cover = avatar,
             subtitle = loginData.user?.email,
             extras = mapOf(
-                "serverUrl" to url,
                 "password" to p,
+                "serverUrl" to url,
+                "serverExtensions" to Server.Extension.serialize(extensions)!!,
             ),
         )
 
@@ -170,8 +189,8 @@ class OpenSubsonicApi {
             cover = avatar,
             subtitle = loginData.user?.email,
             extras = mapOf(
-                "serverUrl" to url,
                 "apiKey" to k,
+                "serverUrl" to url,
             ),
         )
 
@@ -184,7 +203,10 @@ class OpenSubsonicApi {
                 username = it.name,
                 email = it.subtitle,
                 avatar = it.cover,
-                serverUrl = it.extras["serverUrl"],
+                server = Server(
+                    it.extras["serverUrl"]!!,
+                    Server.Extension.deserialize(it.extras["serverExtensions"]),
+                ),
                 password = it.extras["password"],
                 apiKey = it.extras["apiKey"],
             )
@@ -206,7 +228,8 @@ class OpenSubsonicApi {
             extras = mapOf(
                 "password" to userData.password,
                 "apiKey" to userData.apiKey,
-                "serverUrl" to userData.serverUrl,
+                "serverUrl" to userData.server?.url,
+                "serverExtensions" to Server.Extension.serialize(userData.server?.extensions)
             ).mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
         )
     }
@@ -223,11 +246,11 @@ class OpenSubsonicApi {
 
     fun getUrlBuilder(): HttpUrl.Builder {
         checkAuth()
-        return userData.serverUrl!!.toHttpUrl().newBuilder()
+        return userData.server!!.url.toHttpUrl().newBuilder()
     }
 
     fun checkAuth() {
-        if (userData.serverUrl == null || (userData.password == null && userData.apiKey == null)) {
+        if (userData.server == null || (userData.password == null && userData.apiKey == null)) {
             throw ClientException.LoginRequired()
         }
     }
@@ -304,6 +327,20 @@ class OpenSubsonicApi {
         return client.post(url = url, body = body)
     }
 
+    suspend fun authenticatedRequest(
+        endpoint: String,
+        parameters: Map<String, String> = mapOf(),
+        //headers: Headers = DEFAULT_HEADERS,
+        //cache: CacheControl = DEFAULT_CACHE_CONTROL,
+    ) {
+        checkAuth()
+        if (userData.server?.extensions?.contains(Server.Extension.FormPost) == true) {
+            authenticatedPost(endpoint, parameters)
+        } else {
+            authenticatedGet(endpoint, parameters)
+        }
+    }
+
     private inline fun <reified T> Response.parseAs(): T {
         return json.decodeFromStream(body.byteStream())
     }
@@ -323,11 +360,52 @@ class OpenSubsonicApi {
     */
 }
 
+data class Server(
+    val url: String,
+    val extensions: EnumSet<Extension>?
+) {
+    enum class Extension(val id: String) {
+        ApiKeyAuthentication("apiKeyAuthentication"),
+        GetPodcastEpisode("getPodcastEpisode"),
+        FormPost("formPost"),
+        IndexBasedQueue("indexBasedQueue"),
+        SongLyrics("songLyrics"),
+        Template("template"),
+        TranscodeOffset("transcodeOffset"),
+        Transcoding("transcoding");
+
+        companion object {
+            fun serialize(extensions: EnumSet<Extension>?): String? {
+                if (extensions == null) {
+                    return null
+                }
+                return extensions.joinToString(",") { it.id }
+            }
+
+            fun deserialize(s: String?): EnumSet<Extension>? {
+                if (s == null) {
+                    return null
+                }
+
+                val set = EnumSet.noneOf(Extension::class.java)
+                if (s.isNotBlank()) {
+                    s.split(",")
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() }
+                        .mapNotNull { name -> runCatching { Extension.valueOf(name) }.getOrNull() }
+                        .forEach { set.add(it) }
+                }
+                return set
+            }
+        }
+    }
+}
+
 data class UserData(
     val username: String,
     val email: String?,
     val avatar: ImageHolder?,
-    val serverUrl: String?,
+    val server: Server?,
     val password: String?,
     val apiKey: String?,
 ) {

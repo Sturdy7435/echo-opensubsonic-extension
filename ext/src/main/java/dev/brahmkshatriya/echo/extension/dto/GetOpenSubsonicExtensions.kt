@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class LoginDto(
+data class GetOpenSubsonicExtensionsDto(
     @SerialName("subsonic-response")
     val subsonicResponse: SubsonicResponseDto
 ) {
@@ -13,12 +13,12 @@ data class LoginDto(
         val status: String,
         val error: ErrorDto? = null,
 
-        val user: UserDto? = null,
+        val openSubsonicExtensions: List<ExtensionDto>? = null,
     ) {
         @Serializable
-        data class UserDto(
-            val username: String,
-            val email: String? = null,
+        data class ExtensionDto(
+            val name: String,
+            val versions: List<Int>,
         )
     }
 }
