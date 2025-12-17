@@ -20,10 +20,10 @@ import okhttp3.OkHttpClient
 //import okhttp3.RequestBody
 //import okhttp3.RequestBody.Companion.toRequestBody as asRequestBody
 import okhttp3.Response
+import java.net.MalformedURLException
+import java.net.URISyntaxException
 import java.net.UnknownHostException
 import java.util.EnumSet
-import kotlin.enums.enumEntries
-
 
 @OptIn(ExperimentalSerializationApi::class)
 class OpenSubsonicApi {
@@ -65,19 +65,33 @@ class OpenSubsonicApi {
                     COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
                 }.build()
             )
-        } catch (_: UnknownHostException) {
-            throw Exception("Invalid server address")
+        } catch (e: Exception) {
+            when (e) {
+                is MalformedURLException,
+                is URISyntaxException,
+                is UnknownHostException -> throw Exception("Invalid server address")
+
+                else -> throw e
+            }
         }
         if (resp.code == 404) {
             throw Exception("Invalid server address")
         }
 
-        // TODO: add error handling
-        val extensionList = resp.parseAs<GetOpenSubsonicExtensionsDto>()
-            .subsonicResponse.openSubsonicExtensions!!
+        val data = resp.parseAs<GetOpenSubsonicExtensionsDto>().subsonicResponse
+        if (data.status != "ok") {
+            handleError(data.error)
+        }
         val extensions: EnumSet<Server.Extension> = EnumSet.noneOf(Server.Extension::class.java)
-        extensionList.forEach {
-            extensions.add(Server.Extension.valueOf(it.name.replaceFirstChar { it.uppercase() }))
+        data.openSubsonicExtensions!!.forEach {
+            Server.Extension.entries.forEach { entry ->
+                if (it.equals(entry.id)) {
+                    extensions.add(entry)
+                }
+            }
+
+
+            //extensions.add(Server.Extension.valueOf(it.name.replaceFirstChar { it.uppercase() }))
         }
 
         resp = client.get(
@@ -237,10 +251,14 @@ class OpenSubsonicApi {
     // Utils
 
     fun handleError(error: ErrorDto?) {
-        when (error?.code) {
+        if (error == null) {
+            throw Exception("Unknown error")
+        }
+        when (error.code) {
             40 -> throw Exception("Invalid credentials")
             41 or 42 -> throw Exception("Login method not supported")
             44 -> throw Exception("Invalid API key")
+            else -> throw Exception(error.message)
         }
     }
 
