@@ -38,14 +38,13 @@ class OpenSubsonicApi {
         )
     }
 
-    private var userData = UserData.EMPTY
-
+    private val ext by lazy { OpenSubsonicExtension() }
+    private val client = OkHttpClient()
     private val json = Json {
         ignoreUnknownKeys = true
-        // namingStrategy = KebabCaseToCamelCase
     }
 
-    private val client = OkHttpClient()
+    private var userData = UserData.EMPTY
 
     // Login
 
@@ -53,9 +52,6 @@ class OpenSubsonicApi {
         val u: String = data["username"]!!
         val p: String = data["password"]!!
         val url: String = data["address"]!!
-
-        var s: String = generateSalt()
-        var t: String = computeToken(p, s)
 
         var resp: Response
         try {
@@ -89,10 +85,10 @@ class OpenSubsonicApi {
                     extensions.add(entry)
                 }
             }
-
-
-            //extensions.add(Server.Extension.valueOf(it.name.replaceFirstChar { it.uppercase() }))
         }
+
+        var s: String = generateSalt()
+        var t: String = computeToken(p, s)
 
         resp = client.get(
             url = url.toHttpUrl().newBuilder().apply {
@@ -147,22 +143,48 @@ class OpenSubsonicApi {
         val k: String = data["apiKey"]!!
         val url: String = data["address"]!!
 
-        val resp: Response
+        var resp: Response
         try {
             resp = client.get(
                 url = url.toHttpUrl().newBuilder().apply {
-                    addPathSegments("rest/tokenInfo")
-
-                    addQueryParameter("apiKey", k)
+                    addPathSegments("rest/getOpenSubsonicExtensions")
                     COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
                 }.build()
             )
-        } catch (_: UnknownHostException) {
-            throw Exception("Invalid server address")
+        } catch (e: Exception) {
+            when (e) {
+                is MalformedURLException,
+                is URISyntaxException,
+                is UnknownHostException -> throw Exception("Invalid server address")
+
+                else -> throw e
+            }
         }
         if (resp.code == 404) {
             throw Exception("Invalid server address")
         }
+
+        val data = resp.parseAs<GetOpenSubsonicExtensionsDto>().subsonicResponse
+        if (data.status != "ok") {
+            handleError(data.error)
+        }
+        val extensions: EnumSet<Server.Extension> = EnumSet.noneOf(Server.Extension::class.java)
+        data.openSubsonicExtensions!!.forEach {
+            Server.Extension.entries.forEach { entry ->
+                if (it.name == entry.id) {
+                    extensions.add(entry)
+                }
+            }
+        }
+
+        resp = client.get(
+            url = url.toHttpUrl().newBuilder().apply {
+                addPathSegments("rest/tokenInfo")
+
+                addQueryParameter("apiKey", k)
+                COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
+            }.build()
+        )
 
         val respData = resp.parseAs<TokenInfoDto>().subsonicResponse
         if (respData.status != "ok") {
@@ -170,7 +192,7 @@ class OpenSubsonicApi {
         }
         val username = respData.tokenInfo!!.username
 
-        val resp1 = client.get(
+        resp = client.get(
             url = url.toHttpUrl().newBuilder().apply {
                 addPathSegments("rest/getUser")
 
@@ -179,7 +201,8 @@ class OpenSubsonicApi {
                 COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
             }.build()
         )
-        val loginData = resp1.parseAs<LoginDto>().subsonicResponse
+
+        val loginData = resp.parseAs<LoginDto>().subsonicResponse
         if (loginData.status != "ok") {
             handleError(loginData.error)
         }
@@ -205,6 +228,7 @@ class OpenSubsonicApi {
             extras = mapOf(
                 "apiKey" to k,
                 "serverUrl" to url,
+                "serverExtensions" to Server.Extension.serialize(extensions)!!,
             ),
         )
 
@@ -352,7 +376,9 @@ class OpenSubsonicApi {
         //cache: CacheControl = DEFAULT_CACHE_CONTROL,
     ) {
         checkAuth()
-        if (userData.server?.extensions?.contains(Server.Extension.FormPost) == true) {
+
+        val supportsPost = userData.server?.extensions?.contains(Server.Extension.FormPost) ?: false
+        if (supportsPost && !ext.forceGetRequests) {
             authenticatedPost(endpoint, parameters)
         } else {
             authenticatedGet(endpoint, parameters)

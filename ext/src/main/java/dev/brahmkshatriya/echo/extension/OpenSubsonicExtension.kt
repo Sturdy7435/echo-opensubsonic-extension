@@ -4,21 +4,30 @@ import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.settings.Setting
+import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
 
 class OpenSubsonicExtension :
     ExtensionClient,
     LoginClient.CustomInput {
 
-    val api by lazy { OpenSubsonicApi() }
+    private val api by lazy { OpenSubsonicApi() }
 
     // Settings
 
     override suspend fun onExtensionSelected() {}
 
     override suspend fun getSettingItems(): List<Setting> {
-        return emptyList()
+        return listOf(
+            SettingSwitch(
+                "Force GET requests",
+                "force_get_requests",
+                "Whether to force usage of GET requests even if the server supports POST, useful for debugging through server logs but also allows logging of authentication data",
+                forceGetRequests
+            )
+        )
     }
+    val forceGetRequests get() = setting.getBoolean("force_get_requests") ?: false
 
     private lateinit var setting: Settings
 
