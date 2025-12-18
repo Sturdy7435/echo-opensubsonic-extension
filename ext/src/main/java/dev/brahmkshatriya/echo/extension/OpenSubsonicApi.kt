@@ -85,7 +85,7 @@ class OpenSubsonicApi {
         val extensions: EnumSet<Server.Extension> = EnumSet.noneOf(Server.Extension::class.java)
         data.openSubsonicExtensions!!.forEach {
             Server.Extension.entries.forEach { entry ->
-                if (it.equals(entry.id)) {
+                if (it.name == entry.id) {
                     extensions.add(entry)
                 }
             }
