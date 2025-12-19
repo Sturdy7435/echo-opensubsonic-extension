@@ -2,6 +2,11 @@ package dev.brahmkshatriya.echo.extension
 
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.models.Feed
+import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
@@ -9,9 +14,10 @@ import dev.brahmkshatriya.echo.common.settings.Settings
 
 class OpenSubsonicExtension :
     ExtensionClient,
-    LoginClient.CustomInput {
+    LoginClient.CustomInput,
+    TrackClient {
 
-    private val api by lazy { OpenSubsonicApi() }
+    val api by lazy { OpenSubsonicApi() }
 
     // Settings
 
@@ -110,5 +116,22 @@ class OpenSubsonicExtension :
 
     override suspend fun getCurrentUser(): User? {
         return api.getUser()
+    }
+
+    // Track
+
+    override suspend fun loadTrack(track: Track, isDownload: Boolean): Track {
+        return api.getTrack(track)
+    }
+
+    override suspend fun loadStreamableMedia(
+        streamable: Streamable,
+        isDownload: Boolean,
+    ): Streamable.Media {
+        return api.getStreamableMedia(streamable)
+    }
+
+    override suspend fun loadFeed(track: Track): Feed<Shelf>? {
+        return null
     }
 }

@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.extension.dto
+package dev.brahmkshatriya.echo.extension.dto.types
 
 import kotlinx.serialization.Serializable
 
@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 data class ErrorDto(
     val code: Int,
     val message: String?,
+    val helpUrl: String?,
 )
