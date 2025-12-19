@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("java-library")
     id("maven-publish")
@@ -89,3 +91,8 @@ tasks {
 fun execute(vararg command: String): String = providers.exec {
     commandLine(*command)
 }.standardOutput.asText.get().trim()
+
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.compilerOptions {
+    freeCompilerArgs.set(listOf("-Xcontext-parameters"))
+}

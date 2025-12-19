@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.extension.dto.types
 
+import dev.brahmkshatriya.echo.common.models.Track
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -19,4 +20,15 @@ data class SongDto(
     val coverArt: String? = null,
 
     val contentType: String? = null,
-)
+) {
+    fun toTrack(): Track {
+        return Track(
+            id = id,
+            title = title,
+            type = Track.Type.Song,
+            duration = duration?.times(1000)?.toLong(),
+            genres = listOf(genre ?: ""),
+            albumOrderNumber = track?.toLong(),
+        )
+    }
+}

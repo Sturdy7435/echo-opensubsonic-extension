@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.extension
 
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
+import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Feed
@@ -11,9 +12,11 @@ import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
+import dev.brahmkshatriya.echo.extension.tabs.createHomeFeed
 
 class OpenSubsonicExtension :
     ExtensionClient,
+    HomeFeedClient,
     LoginClient.CustomInput,
     TrackClient {
 
@@ -116,6 +119,12 @@ class OpenSubsonicExtension :
 
     override suspend fun getCurrentUser(): User? {
         return api.getUser()
+    }
+
+    // Home Feed
+
+    override suspend fun loadHomeFeed(): Feed<Shelf> {
+        return createHomeFeed()
     }
 
     // Track

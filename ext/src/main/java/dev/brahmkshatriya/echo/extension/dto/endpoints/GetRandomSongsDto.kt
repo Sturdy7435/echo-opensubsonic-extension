@@ -6,7 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RandomSongsDto(
+data class GetRandomSongsDto(
     @SerialName("subsonic-response")
     val subsonicResponse: SubsonicResponseDto
 ) {
