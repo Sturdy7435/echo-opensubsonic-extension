@@ -3,11 +3,15 @@ package dev.brahmkshatriya.echo.extension
 import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.NetworkRequest
+import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.common.models.Streamable
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
-import dev.brahmkshatriya.echo.extension.dto.ErrorDto
-import dev.brahmkshatriya.echo.extension.dto.GetOpenSubsonicExtensionsDto
-import dev.brahmkshatriya.echo.extension.dto.LoginDto
-import dev.brahmkshatriya.echo.extension.dto.TokenInfoDto
+import dev.brahmkshatriya.echo.extension.dto.endpoints.GetOpenSubsonicExtensionsDto
+import dev.brahmkshatriya.echo.extension.dto.endpoints.GetRandomSongsDto
+import dev.brahmkshatriya.echo.extension.dto.endpoints.GetUserDto
+import dev.brahmkshatriya.echo.extension.dto.endpoints.TokenInfoDto
+import dev.brahmkshatriya.echo.extension.dto.types.ErrorDto
 import kotlinx.serialization.ExperimentalSerializationApi
 //import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -102,7 +106,7 @@ class OpenSubsonicApi {
             }.build()
         )
 
-        val loginData = resp.parseAs<LoginDto>().subsonicResponse
+        val loginData = resp.parseAs<GetUserDto>().subsonicResponse
         if (loginData.status != "ok") {
             handleError(loginData.error)
         }
@@ -202,7 +206,7 @@ class OpenSubsonicApi {
             }.build()
         )
 
-        val loginData = resp.parseAs<LoginDto>().subsonicResponse
+        val loginData = resp.parseAs<GetUserDto>().subsonicResponse
         if (loginData.status != "ok") {
             handleError(loginData.error)
         }
@@ -270,6 +274,35 @@ class OpenSubsonicApi {
                 "serverExtensions" to Server.Extension.serialize(userData.server?.extensions)
             ).mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
         )
+    }
+
+    // Track
+
+    suspend fun getRandomTracks(): Shelf {
+        val resp = authenticatedRequest(
+            "getRandomSongs",
+            mapOf(
+                "size" to "20",
+            ),
+        ).parseAs<GetRandomSongsDto>().subsonicResponse
+        if (resp.status != "ok") {
+            handleError(resp.error)
+        }
+        val songs: List<Track> = resp.randomSongs!!.song.map { it.toTrack() }
+
+        return Shelf.Lists.Items(
+            id = "randomTracks",
+            title = "Random Tracks",
+            list = songs,
+        )
+    }
+
+    fun getTrack(track: Track): Track {
+        throw Exception("Work In Progress")
+    }
+
+    fun getStreamableMedia(streamable: Streamable): Streamable.Media {
+        throw Exception("Work In Progress")
     }
 
     // Utils
@@ -374,15 +407,13 @@ class OpenSubsonicApi {
         parameters: Map<String, String> = mapOf(),
         //headers: Headers = DEFAULT_HEADERS,
         //cache: CacheControl = DEFAULT_CACHE_CONTROL,
-    ) {
-        checkAuth()
-
+    ): Response {
         val supportsPost = userData.server?.extensions?.contains(Server.Extension.FormPost) ?: false
         if (supportsPost && !ext.forceGetRequests) {
-            authenticatedPost(endpoint, parameters)
-        } else {
-            authenticatedGet(endpoint, parameters)
+            return authenticatedPost(endpoint, parameters)
         }
+
+        return authenticatedGet(endpoint, parameters)
     }
 
     private inline fun <reified T> Response.parseAs(): T {
