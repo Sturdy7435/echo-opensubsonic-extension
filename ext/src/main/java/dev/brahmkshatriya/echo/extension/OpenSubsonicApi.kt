@@ -299,13 +299,14 @@ class OpenSubsonicApi {
     suspend fun authenticatedGet(
         endpoint: String,
         parameters: Map<String, String> = mapOf(),
+        credentials: UserData = userData,
         //headers: Headers = DEFAULT_HEADERS,
         //cache: CacheControl = DEFAULT_CACHE_CONTROL,
     ): Response {
         checkAuth()
 
-        val p: String? = userData.password
-        val k: String? = userData.apiKey
+        val p: String? = credentials.password
+        val k: String? = credentials.apiKey
 
         var salt: String? = null
         var token: String? = null
@@ -319,7 +320,7 @@ class OpenSubsonicApi {
             addPathSegment(endpoint)
 
             if (p != null) {
-                addQueryParameter("u", userData.username)
+                addQueryParameter("u", credentials.username)
                 addQueryParameter("t", token)
                 addQueryParameter("s", salt)
             } else {
@@ -334,13 +335,14 @@ class OpenSubsonicApi {
     suspend fun authenticatedPost(
         endpoint: String,
         parameters: Map<String, String> = mapOf(),
+        credentials: UserData = userData,
         //headers: Headers = DEFAULT_HEADERS,
         //cache: CacheControl = DEFAULT_CACHE_CONTROL,
     ): Response {
         checkAuth()
 
-        val p: String? = userData.password
-        val k: String? = userData.apiKey
+        val p: String? = credentials.password
+        val k: String? = credentials.apiKey
 
         var salt: String? = null
         var token: String? = null
@@ -356,7 +358,7 @@ class OpenSubsonicApi {
 
         val body = FormBody.Builder().apply {
             if (p != null) {
-                add("u", userData.username)
+                add("u", credentials.username)
                 add("t", token!!)
                 add("s", salt!!)
             } else {
@@ -393,7 +395,7 @@ class OpenSubsonicApi {
         //headers: Headers = DEFAULT_HEADERS,
         //cache: CacheControl = DEFAULT_CACHE_CONTROL,
     ): Response {
-        val userData = UserData(
+        val userDataOverride = UserData(
             username = username,
             password = password,
             apiKey = apiKey,
@@ -405,12 +407,12 @@ class OpenSubsonicApi {
             avatar = null,
         )
 
-        val supportsPost = userData.server?.extensions?.contains(Server.Extension.FormPost) ?: false
+        val supportsPost = userDataOverride.server?.extensions?.contains(Server.Extension.FormPost) ?: false
         if (supportsPost && !ext.forceGetRequests) {
-            return authenticatedPost(endpoint, parameters)
+            return authenticatedPost(endpoint, parameters, userDataOverride)
         }
 
-        return authenticatedGet(endpoint, parameters)
+        return authenticatedGet(endpoint, parameters, userDataOverride)
     }
 
     private inline fun <reified T> Response.parseAs(): T {
