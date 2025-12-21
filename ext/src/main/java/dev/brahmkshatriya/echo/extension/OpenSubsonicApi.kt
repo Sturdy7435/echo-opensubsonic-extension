@@ -147,7 +147,6 @@ class OpenSubsonicApi {
         val k: String = data["apiKey"]!!
         val url: String = data["address"]!!
 
-
         val extensions: EnumSet<Server.Extension> = getServerExtensions(url)
 
         var resp = authenticatedRequest(
@@ -286,7 +285,6 @@ class OpenSubsonicApi {
     }
 
     fun getUrlBuilder(): HttpUrl.Builder {
-        checkAuth()
         return userData.server!!.url.toHttpUrl().newBuilder()
     }
 
