@@ -52,12 +52,8 @@ class OpenSubsonicApi {
 
     // Login
 
-    suspend fun onPasswordLogin(data: Map<String, String?>): List<User> {
-        val u: String = data["username"]!!
-        val p: String = data["password"]!!
-        val url: String = data["address"]!!
-
-        var resp: Response
+    private suspend fun getServerExtensions(url: String): EnumSet<Server.Extension> {
+        val resp: Response
         try {
             resp = client.get(
                 url = url.toHttpUrl().newBuilder().apply {
@@ -90,29 +86,33 @@ class OpenSubsonicApi {
                 }
             }
         }
+        return extensions
+    }
 
-        var s: String = generateSalt()
-        var t: String = computeToken(p, s)
+    suspend fun onPasswordLogin(data: Map<String, String?>): List<User> {
+        val u: String = data["username"]!!
+        val p: String = data["password"]!!
+        val url: String = data["address"]!!
 
-        resp = client.get(
-            url = url.toHttpUrl().newBuilder().apply {
-                addPathSegments("rest/getUser")
+        val extensions: EnumSet<Server.Extension> = getServerExtensions(url)
 
-                addQueryParameter("u", u)
-                addQueryParameter("t", t)
-                addQueryParameter("s", s)
-                addQueryParameter("user", u)
-                COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
-            }.build()
+        val resp = authenticatedRequest(
+            endpoint = "getUser",
+            parameters = mapOf(
+                "user" to "u",
+            ),
+            serverUrl = url,
+            username = u,
+            password = p,
         )
-
         val loginData = resp.parseAs<GetUserDto>().subsonicResponse
         if (loginData.status != "ok") {
             handleError(loginData.error)
         }
 
-        s = generateSalt()
-        t = computeToken(p, s)
+        // TODO: migrate avatar retrieval to authenticatedRequest(), requires upstream changes
+        val s = generateSalt()
+        val t = computeToken(p, s)
         val avatar: ImageHolder = ImageHolder.NetworkRequestImageHolder(
             NetworkRequest(
                 url.toHttpUrl().newBuilder().apply {
@@ -125,7 +125,7 @@ class OpenSubsonicApi {
                     COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
                 }.toString()
             ),
-            crop = false
+            crop = false,
         )
 
         val user = User(
@@ -147,70 +147,36 @@ class OpenSubsonicApi {
         val k: String = data["apiKey"]!!
         val url: String = data["address"]!!
 
-        var resp: Response
-        try {
-            resp = client.get(
-                url = url.toHttpUrl().newBuilder().apply {
-                    addPathSegments("rest/getOpenSubsonicExtensions")
-                    COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
-                }.build()
-            )
-        } catch (e: Exception) {
-            when (e) {
-                is MalformedURLException,
-                is URISyntaxException,
-                is UnknownHostException -> throw Exception("Invalid server address")
 
-                else -> throw e
-            }
-        }
-        if (resp.code == 404) {
-            throw Exception("Invalid server address")
-        }
+        val extensions: EnumSet<Server.Extension> = getServerExtensions(url)
 
-        val data = resp.parseAs<GetOpenSubsonicExtensionsDto>().subsonicResponse
-        if (data.status != "ok") {
-            handleError(data.error)
-        }
-        val extensions: EnumSet<Server.Extension> = EnumSet.noneOf(Server.Extension::class.java)
-        data.openSubsonicExtensions!!.forEach {
-            Server.Extension.entries.forEach { entry ->
-                if (it.name == entry.id) {
-                    extensions.add(entry)
-                }
-            }
-        }
-
-        resp = client.get(
-            url = url.toHttpUrl().newBuilder().apply {
-                addPathSegments("rest/tokenInfo")
-
-                addQueryParameter("apiKey", k)
-                COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
-            }.build()
+        var resp = authenticatedRequest(
+            endpoint = "tokenInfo",
+            serverUrl = url,
+            serverExtensions = extensions,
+            apiKey = k,
         )
-
         val respData = resp.parseAs<TokenInfoDto>().subsonicResponse
         if (respData.status != "ok") {
             handleError(respData.error)
         }
         val username = respData.tokenInfo!!.username
 
-        resp = client.get(
-            url = url.toHttpUrl().newBuilder().apply {
-                addPathSegments("rest/getUser")
-
-                addQueryParameter("apiKey", k)
-                addQueryParameter("user", username)
-                COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
-            }.build()
+        resp = authenticatedRequest(
+            endpoint = "getUser",
+            parameters = mapOf(
+                "user" to username,
+            ),
+            serverUrl = url,
+            serverExtensions = extensions,
+            apiKey = k,
         )
-
         val loginData = resp.parseAs<GetUserDto>().subsonicResponse
         if (loginData.status != "ok") {
             handleError(loginData.error)
         }
 
+        // TODO migrate avatar retrieval to authenticatedRequest(), requires upstream changes
         val avatar: ImageHolder = ImageHolder.NetworkRequestImageHolder(
             NetworkRequest(
                 url.toHttpUrl().newBuilder().apply {
@@ -221,7 +187,7 @@ class OpenSubsonicApi {
                     COMMON_PARAMETERS.forEach { addQueryParameter(it.key, it.value) }
                 }.toString()
             ),
-            crop = false
+            crop = false,
         )
 
         val user = User(
@@ -416,6 +382,37 @@ class OpenSubsonicApi {
         return authenticatedGet(endpoint, parameters)
     }
 
+    suspend fun authenticatedRequest(
+        endpoint: String,
+        parameters: Map<String, String> = mapOf(),
+        serverUrl: String,
+        serverExtensions: EnumSet<Server.Extension>? = null,
+        username: String = "",
+        password: String? = null,
+        apiKey: String? = null,
+        //headers: Headers = DEFAULT_HEADERS,
+        //cache: CacheControl = DEFAULT_CACHE_CONTROL,
+    ): Response {
+        val userData = UserData(
+            username = username,
+            password = password,
+            apiKey = apiKey,
+            server = Server(
+                url = serverUrl,
+                extensions = serverExtensions,
+            ),
+            email = null,
+            avatar = null,
+        )
+
+        val supportsPost = userData.server?.extensions?.contains(Server.Extension.FormPost) ?: false
+        if (supportsPost && !ext.forceGetRequests) {
+            return authenticatedPost(endpoint, parameters)
+        }
+
+        return authenticatedGet(endpoint, parameters)
+    }
+
     private inline fun <reified T> Response.parseAs(): T {
         return json.decodeFromStream(body.byteStream())
     }
@@ -467,7 +464,7 @@ data class Server(
                     s.split(",")
                         .map { it.trim() }
                         .filter { it.isNotEmpty() }
-                        .mapNotNull { name -> runCatching { Extension.valueOf(name) }.getOrNull() }
+                        .mapNotNull { name -> runCatching { valueOf(name) }.getOrNull() }
                         .forEach { set.add(it) }
                 }
                 return set
