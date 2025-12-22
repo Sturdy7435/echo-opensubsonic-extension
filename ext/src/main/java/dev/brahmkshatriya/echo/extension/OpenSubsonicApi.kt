@@ -284,8 +284,8 @@ class OpenSubsonicApi {
         }
     }
 
-    fun getUrlBuilder(): HttpUrl.Builder {
-        return userData.server!!.url.toHttpUrl().newBuilder()
+    fun getUrlBuilder(credentials: UserData = userData): HttpUrl.Builder {
+        return credentials.server!!.url.toHttpUrl().newBuilder()
     }
 
     fun checkAuth(credentials: UserData = userData) {
@@ -313,7 +313,7 @@ class OpenSubsonicApi {
             token = computeToken(p, salt)
         }
 
-        val url = getUrlBuilder().apply {
+        val url = getUrlBuilder(credentials).apply {
             addPathSegment("rest")
             addPathSegment(endpoint)
 
@@ -349,7 +349,7 @@ class OpenSubsonicApi {
             token = computeToken(p, salt)
         }
 
-        val url = getUrlBuilder().apply {
+        val url = getUrlBuilder(credentials).apply {
             addPathSegment("rest")
             addPathSegment(endpoint)
         }.build()
