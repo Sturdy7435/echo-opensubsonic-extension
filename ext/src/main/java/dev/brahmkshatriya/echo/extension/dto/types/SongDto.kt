@@ -26,6 +26,7 @@ data class SongDto(
             id = id,
             title = title,
             type = Track.Type.Song,
+            cover = null, // cover retrieval should be handled separately
             duration = duration?.times(1000)?.toLong(),
             genres = listOf(genre ?: ""),
             albumOrderNumber = track?.toLong(),

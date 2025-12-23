@@ -1,41 +1,16 @@
 package dev.brahmkshatriya.echo.extension
 
-import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.await
-//import kotlinx.serialization.ExperimentalSerializationApi
-//import kotlinx.serialization.descriptors.SerialDescriptor
-//import kotlinx.serialization.json.JsonNamingStrategy
+import dev.brahmkshatriya.echo.common.models.NetworkRequest
 import okhttp3.CacheControl
 import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.HttpUrl
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
-import okhttp3.Response
 import java.util.concurrent.TimeUnit.MINUTES
 import java.security.MessageDigest
 import java.security.SecureRandom
 import kotlin.text.Charsets.UTF_8
-
-/*
-@OptIn(ExperimentalSerializationApi::class)
-object KebabCaseToCamelCase : JsonNamingStrategy {
-    override fun serialNameForJson(
-        descriptor: SerialDescriptor,
-        elementIndex: Int,
-        serialName: String,
-    ): String {
-        val parts = serialName.split('-')
-        return buildString {
-            append(parts[0].lowercase())
-            for (i in 1 until parts.size) {
-                val p = parts[i]
-                if (p.isNotEmpty()) append(p.replaceFirstChar { it.uppercaseChar() })
-            }
-        }
-    }
-}
-*/
 
 val rng = SecureRandom()
 fun generateSalt(length: Int = 8): String {
@@ -62,32 +37,39 @@ val DEFAULT_CACHE_CONTROL = CacheControl.Builder().maxAge(10, MINUTES).build()
 val DEFAULT_HEADERS = Headers.Builder().build()
 val DEFAULT_BODY: RequestBody = FormBody.Builder().build()
 
-suspend fun OkHttpClient.get(
+fun getRequest(
     url: HttpUrl,
     headers: Headers = DEFAULT_HEADERS,
     cache: CacheControl = DEFAULT_CACHE_CONTROL,
-): Response {
-    return newCall(
-        Request.Builder()
-            .url(url)
-            .headers(headers)
-            .cacheControl(cache)
-            .build(),
-    ).await()
+): Request {
+    return Request.Builder()
+        .url(url)
+        .headers(headers)
+        .cacheControl(cache)
+        .build()
 }
 
-suspend fun OkHttpClient.post(
+fun postRequest(
     url: HttpUrl,
     headers: Headers = DEFAULT_HEADERS,
     body: RequestBody = DEFAULT_BODY,
     cache: CacheControl = DEFAULT_CACHE_CONTROL,
-): Response {
-    return newCall(
-        Request.Builder()
-            .url(url)
-            .post(body)
-            .headers(headers)
-            .cacheControl(cache)
-            .build(),
-    ).await()
+): Request {
+    return Request.Builder()
+        .url(url)
+        .post(body)
+        .headers(headers)
+        .cacheControl(cache)
+        .build()
+}
+
+fun Request.toNetworkRequest(): NetworkRequest {
+    return NetworkRequest(
+        url = this.url.toString(),
+        headers = buildMap {
+            headers.forEach { put(it.first, it.second) }
+        },
+        method = NetworkRequest.Method.valueOf(this.method),
+        body = this.body.toString().toByteArray(UTF_8),
+    )
 }

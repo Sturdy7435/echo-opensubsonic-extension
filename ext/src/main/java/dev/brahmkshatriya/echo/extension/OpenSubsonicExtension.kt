@@ -38,8 +38,7 @@ class OpenSubsonicExtension :
     }
     val forceGetRequests get() = setting.getBoolean("force_get_requests") ?: false
 
-    private lateinit var setting: Settings
-
+    lateinit var setting: Settings
     override fun setSettings(settings: Settings) {
         setting = settings
     }
@@ -106,7 +105,6 @@ class OpenSubsonicExtension :
             LoginType.UserPass -> {
                 api.onPasswordLogin(data)
             }
-
             LoginType.ApiKey -> {
                 api.onKeyLogin(data)
             }
