@@ -370,7 +370,7 @@ class OpenSubsonicApi {
         return postRequest(url = url, body = body)
     }
 
-    suspend fun authenticatedRequest(
+    fun authenticatedRequest(
         endpoint: String,
         parameters: Map<String, String> = mapOf(),
         //headers: Headers = DEFAULT_HEADERS,
@@ -384,7 +384,7 @@ class OpenSubsonicApi {
         return authenticatedGet(endpoint, parameters)
     }
 
-    suspend fun authenticatedRequest(
+    fun authenticatedRequest(
         endpoint: String,
         parameters: Map<String, String> = mapOf(),
         serverUrl: String,
