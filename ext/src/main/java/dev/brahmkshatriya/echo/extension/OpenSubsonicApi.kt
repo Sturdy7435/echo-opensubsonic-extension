@@ -242,8 +242,11 @@ class OpenSubsonicApi {
 
     // Track
 
-    //suspend fun getCoverArt() {
-    //}
+//    suspend fun getCoverArt(): ImageHolder {
+//        return ImageHolder(
+//
+//        )
+//    }
 
     suspend fun getRandomTracks(): Shelf {
         val resp = runRequest(
@@ -265,11 +268,11 @@ class OpenSubsonicApi {
     }
 
     fun getTrack(track: Track): Track {
-        throw Exception("Work In Progress")
+        throw ClientException.NotSupported("track")
     }
 
     fun getStreamableMedia(streamable: Streamable): Streamable.Media {
-        throw Exception("Work In Progress")
+        throw ClientException.NotSupported("media streaming")
     }
 
     // Utils

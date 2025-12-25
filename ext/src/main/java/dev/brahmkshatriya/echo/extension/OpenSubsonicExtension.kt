@@ -20,6 +20,13 @@ class OpenSubsonicExtension :
     LoginClient.CustomInput,
     TrackClient {
 
+    val forceGetRequests get() = setting.getBoolean("force_get_requests") ?: false
+
+    lateinit var setting: Settings
+    override fun setSettings(settings: Settings) {
+        setting = settings
+    }
+
     val api by lazy { OpenSubsonicApi() }
 
     // Settings
@@ -35,12 +42,6 @@ class OpenSubsonicExtension :
                 forceGetRequests
             )
         )
-    }
-    val forceGetRequests get() = setting.getBoolean("force_get_requests") ?: false
-
-    lateinit var setting: Settings
-    override fun setSettings(settings: Settings) {
-        setting = settings
     }
 
     // Login
