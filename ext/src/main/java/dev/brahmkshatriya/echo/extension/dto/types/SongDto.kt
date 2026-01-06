@@ -41,6 +41,11 @@ data class SongDto(
                             parameters = mapOf(
                                 "id" to coverArt,
                             ),
+                            serverUrl = api.userData.server!!.url,
+                            serverExtensions = api.userData.server!!.extensions,
+                            username = api.userData.username,
+                            password = api.userData.password,
+                            apiKey = api.userData.apiKey,
                         ).toNetworkRequest(),
                         crop = false,
                     )
