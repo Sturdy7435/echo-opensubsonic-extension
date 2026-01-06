@@ -1,7 +1,12 @@
 package dev.brahmkshatriya.echo.extension.dto.types
 
+import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.extension.OpenSubsonicApi
+import dev.brahmkshatriya.echo.extension.toNetworkRequest
 import kotlinx.serialization.Serializable
+
+val api by lazy { OpenSubsonicApi() }
 
 @Serializable
 data class SongDto(
@@ -26,10 +31,26 @@ data class SongDto(
             id = id,
             title = title,
             type = Track.Type.Song,
-            cover = null, // cover retrieval should be handled separately
+            cover =
+                if (coverArt == null) {
+                    null
+                } else {
+                    ImageHolder.NetworkRequestImageHolder(
+                        api.authenticatedRequest(
+                            endpoint = "getCoverArt",
+                            parameters = mapOf(
+                                "id" to coverArt,
+                            ),
+                        ).toNetworkRequest(),
+                        crop = false,
+                    )
+                },
             duration = duration?.times(1000)?.toLong(),
             genres = listOf(genre ?: ""),
             albumOrderNumber = track?.toLong(),
+            extras = mapOf(
+                "coverArtID" to coverArt,
+            ).mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
         )
     }
 }

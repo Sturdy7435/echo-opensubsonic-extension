@@ -43,13 +43,13 @@ class OpenSubsonicApi {
         )
     }
 
-    private val ext by lazy { OpenSubsonicExtension() }
+    //private val ext by lazy { OpenSubsonicExtension() }
     private val client = OkHttpClient()
     private val json = Json {
         ignoreUnknownKeys = true
     }
 
-    private var userData = UserData.EMPTY
+    var userData = UserData.EMPTY
 
     // Login
 
@@ -242,12 +242,6 @@ class OpenSubsonicApi {
 
     // Track
 
-//    suspend fun getCoverArt(): ImageHolder {
-//        return ImageHolder(
-//
-//        )
-//    }
-
     suspend fun getRandomTracks(): Shelf {
         val resp = runRequest(
             endpoint = "getRandomSongs",
@@ -380,7 +374,7 @@ class OpenSubsonicApi {
         //cache: CacheControl = DEFAULT_CACHE_CONTROL,
     ): Request {
         val supportsPost = userData.server?.extensions?.contains(Server.Extension.FormPost) ?: false
-        if (supportsPost && !ext.forceGetRequests) {
+        if (supportsPost /*&& !ext.forceGetRequests*/) {
             return authenticatedPost(endpoint, parameters)
         }
 
@@ -412,7 +406,7 @@ class OpenSubsonicApi {
 
         val supportsPost =
             userDataOverride.server?.extensions?.contains(Server.Extension.FormPost) ?: false
-        if (supportsPost && !ext.forceGetRequests) {
+        if (supportsPost /*&& !ext.forceGetRequests*/) {
             return authenticatedPost(endpoint, parameters, userDataOverride)
         }
 

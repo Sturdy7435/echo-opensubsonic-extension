@@ -20,28 +20,29 @@ class OpenSubsonicExtension :
     LoginClient.CustomInput,
     TrackClient {
 
-    val forceGetRequests get() = setting.getBoolean("force_get_requests") ?: false
-
-    lateinit var setting: Settings
-    override fun setSettings(settings: Settings) {
-        setting = settings
-    }
-
     val api by lazy { OpenSubsonicApi() }
 
     // Settings
 
     override suspend fun onExtensionSelected() {}
 
+    // BUG: setting is not initialized in OpenSubsonicApi, even if setSettings() has been called.
+    //      This setting currently has no effect.
     override suspend fun getSettingItems(): List<Setting> {
         return listOf(
             SettingSwitch(
                 "Force GET requests",
                 "force_get_requests",
-                "Whether to force usage of GET requests even if the server supports POST, useful for debugging through server logs but also allows logging of authentication data",
+                "Whether to force usage of GET requests even if the server supports POST, useful for debugging through server logs but also allows logging of authentication data (HAS NO EFFECT CURRENTLY)",
                 forceGetRequests
             )
         )
+    }
+    val forceGetRequests get() = setting.getBoolean("force_get_requests") ?: false
+
+    lateinit var setting: Settings
+    override fun setSettings(settings: Settings) {
+        setting = settings
     }
 
     // Login
