@@ -102,7 +102,7 @@ class OpenSubsonicApi {
         val resp = runRequest(
             endpoint = "getUser",
             parameters = mapOf(
-                "user" to u,
+                "username" to u,
             ),
             serverUrl = url,
             serverExtensions = extensions,
@@ -164,7 +164,7 @@ class OpenSubsonicApi {
         resp = runRequest(
             endpoint = "getUser",
             parameters = mapOf(
-                "user" to username,
+                "username" to username,
             ),
             serverUrl = url,
             serverExtensions = extensions,
