@@ -70,6 +70,6 @@ fun Request.toNetworkRequest(): NetworkRequest {
             headers.forEach { put(it.first, it.second) }
         },
         method = NetworkRequest.Method.valueOf(this.method),
-        body = this.body.toString().toByteArray(UTF_8),
+        body = this.body?.toString()?.toByteArray(),
     )
 }
