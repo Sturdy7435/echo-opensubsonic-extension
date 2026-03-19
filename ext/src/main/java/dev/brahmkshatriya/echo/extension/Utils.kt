@@ -63,13 +63,19 @@ fun postRequest(
         .build()
 }
 
+fun RequestBody.toByteArray(): ByteArray {
+    val buffer = okio.Buffer()
+    this.writeTo(buffer)
+    return buffer.readByteArray()
+}
+
 fun Request.toNetworkRequest(): NetworkRequest {
     return NetworkRequest(
-        url = this.url.toString(),
+        url = url.toString(),
         headers = buildMap {
             headers.forEach { put(it.first, it.second) }
         },
-        method = NetworkRequest.Method.valueOf(this.method),
-        body = this.body?.toString()?.toByteArray(),
+        method = NetworkRequest.Method.valueOf(method),
+        body = body?.toByteArray(),
     )
 }
