@@ -140,7 +140,7 @@ class OpenSubsonicExtension :
         return api.getStreamableMedia(streamable)
     }
 
-    override suspend fun loadFeed(track: Track): Feed<Shelf>? {
-        return null
+    override suspend fun loadFeed(track: Track): Feed<Shelf> {
+        return createHomeFeed()
     }
 }

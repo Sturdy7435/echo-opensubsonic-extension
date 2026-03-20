@@ -450,20 +450,6 @@ class OpenSubsonicApi {
     private inline fun <reified T> Response.parseAs(): T {
         return json.decodeFromStream(body.byteStream())
     }
-
-    /*
-    private inline fun <reified T> Response.parseAs(serializer: KSerializer<T>): T {
-        return json.decodeFromStream(serializer, body.byteStream())
-    }
-    */
-
-    /*
-    private inline fun <reified T> T.toRequestBody(): RequestBody {
-        return json.encodeToString(this).asRequestBody(
-            "application/json".toMediaType(),
-        )
-    }
-    */
 }
 
 data class Server(
