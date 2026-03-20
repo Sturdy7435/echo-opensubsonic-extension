@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.extension.dto.endpoints.GetRandomSongsDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetUserDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.TokenInfoDto
 import dev.brahmkshatriya.echo.extension.dto.types.ErrorDto
+import dev.brahmkshatriya.echo.extension.dto.types.SongDto
 import kotlinx.serialization.ExperimentalSerializationApi
 //import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -241,7 +242,6 @@ class OpenSubsonicApi {
     }
 
     // Track
-
     suspend fun getRandomTracks(): Shelf {
         val resp = runRequest(
             endpoint = "getRandomSongs",
@@ -252,6 +252,7 @@ class OpenSubsonicApi {
         if (resp.status != "ok") {
             handleError(resp.error)
         }
+
         val songs: List<Track> = resp.randomSongs!!.song.map { it.toTrack() }
 
         return Shelf.Lists.Items(
@@ -267,6 +268,35 @@ class OpenSubsonicApi {
 
     fun getStreamableMedia(streamable: Streamable): Streamable.Media {
         throw ClientException.NotSupported("media streaming")
+    }
+
+    fun SongDto.toTrack(): Track {
+        checkAuth()
+        return Track(
+            id = id,
+            title = title,
+            type = Track.Type.Song,
+            cover =
+                if (coverArt == null) {
+                    null
+                } else {
+                    ImageHolder.NetworkRequestImageHolder(
+                        authenticatedRequest(
+                            endpoint = "getCoverArt",
+                            parameters = mapOf(
+                                "id" to coverArt,
+                            ),
+                        ).toNetworkRequest(),
+                        crop = false,
+                    )
+                },
+            duration = duration?.times(1000)?.toLong(),
+            genres = listOf(genre ?: ""),
+            albumOrderNumber = track?.toLong(),
+            extras = mapOf(
+                "coverArtID" to coverArt,
+            ).mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
+        )
     }
 
     // Utils

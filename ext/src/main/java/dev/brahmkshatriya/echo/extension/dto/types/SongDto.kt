@@ -6,7 +6,7 @@ import dev.brahmkshatriya.echo.extension.OpenSubsonicApi
 import dev.brahmkshatriya.echo.extension.toNetworkRequest
 import kotlinx.serialization.Serializable
 
-val api by lazy { OpenSubsonicApi() }
+
 
 @Serializable
 data class SongDto(
@@ -25,37 +25,4 @@ data class SongDto(
     val coverArt: String? = null,
 
     val contentType: String? = null,
-) {
-    fun toTrack(): Track {
-        return Track(
-            id = id,
-            title = title,
-            type = Track.Type.Song,
-            cover =
-                if (coverArt == null) {
-                    null
-                } else {
-                    ImageHolder.NetworkRequestImageHolder(
-                        api.authenticatedRequest(
-                            endpoint = "getCoverArt",
-                            parameters = mapOf(
-                                "id" to coverArt,
-                            ),
-                            serverUrl = api.userData.server!!.url,
-                            serverExtensions = api.userData.server!!.extensions,
-                            username = api.userData.username,
-                            password = api.userData.password,
-                            apiKey = api.userData.apiKey,
-                        ).toNetworkRequest(),
-                        crop = false,
-                    )
-                },
-            duration = duration?.times(1000)?.toLong(),
-            genres = listOf(genre ?: ""),
-            albumOrderNumber = track?.toLong(),
-            extras = mapOf(
-                "coverArtID" to coverArt,
-            ).mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
-        )
-    }
-}
+)
