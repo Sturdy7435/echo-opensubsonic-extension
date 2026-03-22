@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
+import dev.brahmkshatriya.echo.extension.api.OpenSubsonicApi
 import dev.brahmkshatriya.echo.extension.tabs.createHomeFeed
 
 class OpenSubsonicExtension :

@@ -1,5 +1,10 @@
 package dev.brahmkshatriya.echo.extension.dto.types
 
+import dev.brahmkshatriya.echo.common.models.ImageHolder
+import dev.brahmkshatriya.echo.common.models.Track
+import dev.brahmkshatriya.echo.extension.api.request.authenticatedRequest
+import dev.brahmkshatriya.echo.extension.api.login.checkAuth
+import dev.brahmkshatriya.echo.extension.toNetworkRequest
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -19,4 +24,33 @@ data class SongDto(
     val coverArt: String? = null,
 
     val contentType: String? = null,
-)
+) {
+    fun toTrack(): Track {
+        checkAuth()
+        return Track(
+            id = id,
+            title = title,
+            type = Track.Type.Song,
+            cover =
+                if (coverArt == null) {
+                    null
+                } else {
+                    ImageHolder.NetworkRequestImageHolder(
+                        authenticatedRequest(
+                            endpoint = "getCoverArt",
+                            parameters = mapOf(
+                                "id" to coverArt,
+                            ),
+                        ).toNetworkRequest(),
+                        crop = false,
+                    )
+                },
+            duration = duration?.times(1000)?.toLong(),
+            genres = listOf(genre ?: ""),
+            albumOrderNumber = track?.toLong(),
+            extras = mapOf(
+                "coverArtID" to coverArt,
+            ).mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
+        )
+    }
+}

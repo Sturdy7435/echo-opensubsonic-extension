@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.extension
+package dev.brahmkshatriya.echo.extension.api.login
 
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import java.util.EnumSet
