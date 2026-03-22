@@ -1,12 +1,6 @@
 package dev.brahmkshatriya.echo.extension.dto.types
 
-import dev.brahmkshatriya.echo.common.models.ImageHolder
-import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.extension.OpenSubsonicApi
-import dev.brahmkshatriya.echo.extension.toNetworkRequest
 import kotlinx.serialization.Serializable
-
-
 
 @Serializable
 data class SongDto(
