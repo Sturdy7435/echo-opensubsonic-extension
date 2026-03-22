@@ -14,7 +14,6 @@ import dev.brahmkshatriya.echo.extension.dto.endpoints.TokenInfoDto
 import dev.brahmkshatriya.echo.extension.dto.types.ErrorDto
 import dev.brahmkshatriya.echo.extension.dto.types.SongDto
 import kotlinx.serialization.ExperimentalSerializationApi
-//import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import okhttp3.FormBody
@@ -44,13 +43,12 @@ class OpenSubsonicApi {
         )
     }
 
-    //private val ext by lazy { OpenSubsonicExtension() }
     private val client = OkHttpClient()
     private val json = Json {
         ignoreUnknownKeys = true
     }
 
-    var userData = UserData.EMPTY
+    //var userData = UserData.EMPTY
 
     // Login
 
@@ -205,7 +203,7 @@ class OpenSubsonicApi {
     }
 
     fun setUser(user: User?) {
-        userData = user?.let {
+        UserSession.current = user?.let {
             UserData(
                 username = it.name,
                 email = it.subtitle,
@@ -227,14 +225,14 @@ class OpenSubsonicApi {
             return null
         }
 
+        val userData = UserSession.current
+        // Email address (subtitle), password and apiKey removed
         return User(
             id = userData.username,
             name = userData.username,
             cover = userData.avatar,
-            subtitle = userData.email,
+            subtitle = null,
             extras = mapOf(
-                "password" to userData.password,
-                "apiKey" to userData.apiKey,
                 "serverUrl" to userData.server?.url,
                 "serverExtensions" to Server.Extension.serialize(userData.server?.extensions)
             ).mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
@@ -313,11 +311,11 @@ class OpenSubsonicApi {
         }
     }
 
-    fun getUrlBuilder(credentials: UserData = userData): HttpUrl.Builder {
+    fun getUrlBuilder(credentials: UserData = UserSession.current): HttpUrl.Builder {
         return credentials.server!!.url.toHttpUrl().newBuilder()
     }
 
-    fun checkAuth(credentials: UserData = userData) {
+    fun checkAuth(credentials: UserData = UserSession.current) {
         if (credentials.server == null || (credentials.password == null && credentials.apiKey == null)) {
             throw ClientException.LoginRequired()
         }
@@ -326,7 +324,7 @@ class OpenSubsonicApi {
     fun authenticatedGet(
         endpoint: String,
         parameters: Map<String, String> = mapOf(),
-        credentials: UserData = userData,
+        credentials: UserData = UserSession.current,
         //headers: Headers = DEFAULT_HEADERS,
         //cache: CacheControl = DEFAULT_CACHE_CONTROL,
     ): Request {
@@ -362,7 +360,7 @@ class OpenSubsonicApi {
     fun authenticatedPost(
         endpoint: String,
         parameters: Map<String, String> = mapOf(),
-        credentials: UserData = userData,
+        credentials: UserData = UserSession.current,
         //headers: Headers = DEFAULT_HEADERS,
         //cache: CacheControl = DEFAULT_CACHE_CONTROL,
     ): Request {
@@ -403,7 +401,7 @@ class OpenSubsonicApi {
         //headers: Headers = DEFAULT_HEADERS,
         //cache: CacheControl = DEFAULT_CACHE_CONTROL,
     ): Request {
-        val supportsPost = userData.server?.extensions?.contains(Server.Extension.FormPost) ?: false
+        val supportsPost = UserSession.current.server?.extensions?.contains(Server.Extension.FormPost) ?: false
         if (supportsPost /*&& !ext.forceGetRequests*/) {
             return authenticatedPost(endpoint, parameters)
         }
@@ -482,56 +480,56 @@ class OpenSubsonicApi {
     }
 }
 
-data class Server(
-    val url: String,
-    val extensions: EnumSet<Extension>?
-) {
-    enum class Extension(val id: String) {
-        ApiKeyAuthentication("apiKeyAuthentication"),
-        GetPodcastEpisode("getPodcastEpisode"),
-        FormPost("formPost"),
-        IndexBasedQueue("indexBasedQueue"),
-        SongLyrics("songLyrics"),
-        Template("template"),
-        TranscodeOffset("transcodeOffset"),
-        Transcoding("transcoding");
-
-        companion object {
-            fun serialize(extensions: EnumSet<Extension>?): String? {
-                if (extensions == null) {
-                    return null
-                }
-                return extensions.joinToString(",") { it.id }
-            }
-
-            fun deserialize(s: String?): EnumSet<Extension>? {
-                if (s == null) {
-                    return null
-                }
-
-                val set = EnumSet.noneOf(Extension::class.java)
-                if (s.isNotBlank()) {
-                    s.split(",")
-                        .map { it.trim() }
-                        .filter { it.isNotEmpty() }
-                        .mapNotNull { name -> runCatching { valueOf(name) }.getOrNull() }
-                        .forEach { set.add(it) }
-                }
-                return set
-            }
-        }
-    }
-}
-
-data class UserData(
-    val username: String,
-    val email: String?,
-    val avatar: ImageHolder?,
-    val server: Server?,
-    val password: String?,
-    val apiKey: String?,
-) {
-    companion object {
-        val EMPTY = UserData("", null, null, null, null, null)
-    }
-}
+//data class Server(
+//    val url: String,
+//    val extensions: EnumSet<Extension>?
+//) {
+//    enum class Extension(val id: String) {
+//        ApiKeyAuthentication("apiKeyAuthentication"),
+//        GetPodcastEpisode("getPodcastEpisode"),
+//        FormPost("formPost"),
+//        IndexBasedQueue("indexBasedQueue"),
+//        SongLyrics("songLyrics"),
+//        Template("template"),
+//        TranscodeOffset("transcodeOffset"),
+//        Transcoding("transcoding");
+//
+//        companion object {
+//            fun serialize(extensions: EnumSet<Extension>?): String? {
+//                if (extensions == null) {
+//                    return null
+//                }
+//                return extensions.joinToString(",") { it.id }
+//            }
+//
+//            fun deserialize(s: String?): EnumSet<Extension>? {
+//                if (s == null) {
+//                    return null
+//                }
+//
+//                val set = EnumSet.noneOf(Extension::class.java)
+//                if (s.isNotBlank()) {
+//                    s.split(",")
+//                        .map { it.trim() }
+//                        .filter { it.isNotEmpty() }
+//                        .mapNotNull { name -> runCatching { valueOf(name) }.getOrNull() }
+//                        .forEach { set.add(it) }
+//                }
+//                return set
+//            }
+//        }
+//    }
+//}
+//
+//data class UserData(
+//    val username: String,
+//    val email: String?,
+//    val avatar: ImageHolder?,
+//    val server: Server?,
+//    val password: String?,
+//    val apiKey: String?,
+//) {
+//    companion object {
+//        val EMPTY = UserData("", null, null, null, null, null)
+//    }
+//}
