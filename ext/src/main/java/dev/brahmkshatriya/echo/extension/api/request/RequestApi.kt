@@ -135,9 +135,9 @@ fun authenticatedRequest(
 
     val supportsPost = server.extensions?.contains(Server.Extension.FormPost) ?: false
     if (supportsPost /*&& !ext.forceGetRequests*/) {
-        return post(endpoint, server.url, p)
+        return post(baseUrl = server.url, endpoint = endpoint, parameters = p)
     }
-    return get(endpoint, server.url, p)
+    return get(baseUrl = server.url, endpoint = endpoint, parameters = p)
 }
 
 suspend fun runRequest(
