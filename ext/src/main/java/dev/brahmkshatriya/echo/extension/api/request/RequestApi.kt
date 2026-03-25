@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.extension.api.request
 
 import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.await
+import dev.brahmkshatriya.echo.extension.SettingsObject
 import dev.brahmkshatriya.echo.extension.api.login.Server
 import dev.brahmkshatriya.echo.extension.api.login.UserData
 import dev.brahmkshatriya.echo.extension.api.login.UserSession
@@ -134,7 +135,7 @@ fun authenticatedRequest(
     val server: Server = credentials.server!!
 
     val supportsPost = server.extensions?.contains(Server.Extension.FormPost) ?: false
-    if (supportsPost /*&& !ext.forceGetRequests*/) {
+    if (supportsPost && !SettingsObject.forceGetRequests) {
         return post(baseUrl = server.url, endpoint = endpoint, parameters = p)
     }
     return get(baseUrl = server.url, endpoint = endpoint, parameters = p)

@@ -10,7 +10,6 @@ import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.common.settings.Setting
-import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
 import dev.brahmkshatriya.echo.extension.api.OpenSubsonicApi
 import dev.brahmkshatriya.echo.extension.tabs.createHomeFeed
@@ -25,25 +24,12 @@ class OpenSubsonicExtension :
 
     // Settings
 
-    override suspend fun onExtensionSelected() {}
-
-    // BUG: setting is not initialized in OpenSubsonicApi, even if setSettings() has been called.
-    //      This setting currently has no effect.
     override suspend fun getSettingItems(): List<Setting> {
-        return listOf(
-            SettingSwitch(
-                "Force GET requests",
-                "force_get_requests",
-                "Whether to force usage of GET requests even if the server supports POST, useful for debugging through server logs but also allows logging of authentication data (HAS NO EFFECT CURRENTLY)",
-                forceGetRequests
-            )
-        )
+        return SettingsObject.items
     }
-    val forceGetRequests get() = setting.getBoolean("force_get_requests") ?: false
 
-    lateinit var setting: Settings
     override fun setSettings(settings: Settings) {
-        setting = settings
+        SettingsObject.current = settings
     }
 
     // Login
@@ -131,14 +117,14 @@ class OpenSubsonicExtension :
     // Track
 
     override suspend fun loadTrack(track: Track, isDownload: Boolean): Track {
-        return api.getTrack(track)
+        return api.loadTrack(track)
     }
 
     override suspend fun loadStreamableMedia(
         streamable: Streamable,
         isDownload: Boolean,
     ): Streamable.Media {
-        return api.getStreamableMedia(streamable)
+        return api.loadStreamableMedia(streamable)
     }
 
     override suspend fun loadFeed(track: Track): Feed<Shelf> {
