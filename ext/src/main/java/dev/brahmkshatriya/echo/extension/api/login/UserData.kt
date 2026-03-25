@@ -19,6 +19,8 @@ data class Server(
         Transcoding("transcoding");
 
         companion object {
+            private val ID_TO_NAME: Map<String, Extension> = entries.associateBy { it.id }
+
             fun serialize(extensions: EnumSet<Extension>?): String? {
                 if (extensions == null) {
                     return null
@@ -36,7 +38,7 @@ data class Server(
                     s.split(",")
                         .map { it.trim() }
                         .filter { it.isNotEmpty() }
-                        .mapNotNull { name -> runCatching { valueOf(name) }.getOrNull() }
+                        .mapNotNull { id -> ID_TO_NAME[id] }
                         .forEach { set.add(it) }
                 }
                 return set
