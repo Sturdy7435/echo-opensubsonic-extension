@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.extension.api.track
 
-import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
@@ -9,6 +8,7 @@ import dev.brahmkshatriya.echo.extension.api.request.handleError
 import dev.brahmkshatriya.echo.extension.api.request.parseAs
 import dev.brahmkshatriya.echo.extension.api.request.runRequest
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetRandomSongsDto
+import dev.brahmkshatriya.echo.extension.toNetworkRequest
 
 suspend fun getRandomTracks(): Shelf {
     val resp = runRequest(
@@ -33,9 +33,24 @@ suspend fun getRandomTracks(): Shelf {
 }
 
 fun getTrack(track: Track): Track {
-    throw ClientException.NotSupported("track")
+    return track
 }
 
 fun getStreamableMedia(streamable: Streamable): Streamable.Media {
-    throw ClientException.NotSupported("media streaming")
+    return Streamable.Media.Server(
+        sources = listOf(
+            Streamable.Source.Http(
+                request = authenticatedRequest(
+                    endpoint = "stream",
+                    parameters = mapOf(
+                        "id" to streamable.id,
+                    ),
+                ).toNetworkRequest(),
+                type = Streamable.SourceType.Progressive,
+                quality = streamable.quality,
+                title = streamable.title,
+            ),
+        ),
+        merged = true
+    )
 }

@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.extension.dto.types
 
 import dev.brahmkshatriya.echo.common.models.ImageHolder
+import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extension.api.request.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.api.login.checkAuth
@@ -18,6 +19,7 @@ data class SongDto(
     val artist: String? = null,
     val track: Int? = null,
     val duration: Int? = null, // in seconds
+    val bitRate: Int? = null,
 
     val year: Int? = null,
     val genre: String? = null,
@@ -31,6 +33,13 @@ data class SongDto(
             id = id,
             title = title,
             type = Track.Type.Song,
+            streamables = listOf(
+                Streamable.server(
+                    id = id,
+                    quality = bitRate ?: 0,
+                    title = "${bitRate}kbps",
+                )
+            ),
             cover =
                 if (coverArt == null) {
                     null
