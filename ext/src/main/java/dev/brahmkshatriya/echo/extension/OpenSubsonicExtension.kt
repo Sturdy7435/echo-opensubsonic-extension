@@ -124,7 +124,7 @@ class OpenSubsonicExtension :
         streamable: Streamable,
         isDownload: Boolean,
     ): Streamable.Media {
-        return api.loadStreamableMedia(streamable)
+        return api.loadStreamableMedia(streamable, isDownload)
     }
 
     override suspend fun loadFeed(track: Track): Feed<Shelf> {

@@ -36,16 +36,25 @@ fun getTrack(track: Track): Track {
     return track
 }
 
-fun getStreamableMedia(streamable: Streamable): Streamable.Media {
+fun getStreamableMedia(streamable: Streamable, isDownload: Boolean): Streamable.Media {
     return Streamable.Media.Server(
         sources = listOf(
             Streamable.Source.Http(
-                request = authenticatedRequest(
-                    endpoint = "stream",
-                    parameters = mapOf(
-                        "id" to streamable.id,
-                    ),
-                ).toNetworkRequest(),
+                request = if (isDownload) {
+                    authenticatedRequest(
+                        endpoint = "download",
+                        parameters = mapOf(
+                            "id" to streamable.id,
+                        ),
+                    ).toNetworkRequest()
+                } else {
+                    authenticatedRequest(
+                        endpoint = "stream",
+                        parameters = mapOf(
+                            "id" to streamable.id,
+                        ),
+                    ).toNetworkRequest()
+                },
                 type = Streamable.SourceType.Progressive,
                 quality = streamable.quality,
                 title = streamable.title,

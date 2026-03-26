@@ -31,7 +31,7 @@ class OpenSubsonicApi {
         return getTrack(track)
     }
 
-    fun loadStreamableMedia(streamable: Streamable): Streamable.Media {
-        return getStreamableMedia(streamable)
+    fun loadStreamableMedia(streamable: Streamable, isDownload: Boolean): Streamable.Media {
+        return getStreamableMedia(streamable, isDownload)
     }
 }
