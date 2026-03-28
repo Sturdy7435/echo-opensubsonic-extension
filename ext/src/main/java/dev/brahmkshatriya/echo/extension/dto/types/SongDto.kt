@@ -16,6 +16,7 @@ data class SongDto(
 
     val title: String,
     val album: String? = null,
+    val artists: List<ArtistDto>? = null,
     val artist: String? = null,
     val track: Int? = null,
     val discNumber: Int? = null,
@@ -48,7 +49,7 @@ data class SongDto(
                     crop = false,
                 )
             },
-            artists = listOf(),
+            artists = artists?.map { it.toArtist() } ?: listOf(),
             album = null,
             duration = duration?.let { (it * 1000).toLong() },
             releaseDate = year?.let { Date(year = it) },
