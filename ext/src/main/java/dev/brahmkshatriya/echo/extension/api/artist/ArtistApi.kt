@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.extension.api.request.parseAs
 import dev.brahmkshatriya.echo.extension.api.request.runRequest
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetArtistDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetArtistInfoDto
+import dev.brahmkshatriya.echo.extension.dto.endpoints.GetTopSongsDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -34,12 +35,25 @@ suspend fun getArtist(artist: Artist): Artist {
         )
     ).parseAs<GetArtistInfoDto>().subsonicResponse
 
-    return artistData.artist.toArtist().copy(
+    return artistData.artist!!.toArtist().copy(
         bio = extraData.biography,
     )
 }
 
 suspend fun createArtistFeed(artist: Artist): Feed<Shelf> {
+    val topData = runRequest(
+        authenticatedRequest(
+            endpoint = "getTopSongs",
+            parameters = mapOf(
+                "artist" to artist.name,
+                "count" to "50",
+            ),
+        )
+    ).parseAs<GetTopSongsDto>().subsonicResponse.topSongs
+    val topMore = topData?.song?.map { it.toTrack() } ?: listOf()
+    val topSize = 9.coerceAtMost(topMore.size - 1)
+    val top = topMore.slice(0..topSize)
+
     val albumsData = runRequest(
         authenticatedRequest(
             endpoint = "getArtist",
@@ -47,7 +61,7 @@ suspend fun createArtistFeed(artist: Artist): Feed<Shelf> {
                 "id" to artist.id
             ),
         )
-    ).parseAs<GetArtistDto>().subsonicResponse.artist.album
+    ).parseAs<GetArtistDto>().subsonicResponse.artist?.album
     val albums: List<Album> = albumsData?.map { it.toAlbum() } ?: listOf()
 
     val similarData = runRequest(
@@ -63,6 +77,15 @@ suspend fun createArtistFeed(artist: Artist): Feed<Shelf> {
     return withContext(Dispatchers.IO) {
         listOf(
             async {
+                Shelf.Lists.Tracks(
+                    id = "top",
+                    title = "Top songs",
+                    list = top,
+                    more = topMore.map { it.toShelf() }.toFeed(),
+                    type = Shelf.Lists.Type.Grid,
+                )
+            },
+            async {
                 Shelf.Lists.Items(
                     id = "albums",
                     title = "Albums",
@@ -77,7 +100,7 @@ suspend fun createArtistFeed(artist: Artist): Feed<Shelf> {
                     list = similar,
                     type = Shelf.Lists.Type.Linear
                 )
-            }
+            },
         ).awaitAll()
     }.toFeed()
 }

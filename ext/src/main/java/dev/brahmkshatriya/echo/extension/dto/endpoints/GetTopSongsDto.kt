@@ -1,12 +1,12 @@
 package dev.brahmkshatriya.echo.extension.dto.endpoints
 
-import dev.brahmkshatriya.echo.extension.dto.types.ArtistDto
 import dev.brahmkshatriya.echo.extension.dto.types.ErrorDto
+import dev.brahmkshatriya.echo.extension.dto.types.SongDto
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class GetArtistDto(
+data class GetTopSongsDto(
     @SerialName("subsonic-response")
     val subsonicResponse: SubsonicResponseDto
 ) {
@@ -15,6 +15,11 @@ data class GetArtistDto(
         val status: String,
         val error: ErrorDto? = null,
 
-        val artist: ArtistDto? = null,
-    )
+        val topSongs: TopSongsDto? = null,
+    ) {
+        @Serializable
+        data class TopSongsDto(
+            val song: List<SongDto>,
+        )
+    }
 }
