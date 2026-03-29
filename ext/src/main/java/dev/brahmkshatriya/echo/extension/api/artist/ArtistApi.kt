@@ -47,8 +47,18 @@ suspend fun createArtistFeed(artist: Artist): Feed<Shelf> {
                 "id" to artist.id
             ),
         )
-    ).parseAs<GetArtistDto>().subsonicResponse
-    val albums: List<Album> = albumsData.artist.album?.map { it.toAlbum() } ?: listOf()
+    ).parseAs<GetArtistDto>().subsonicResponse.artist.album
+    val albums: List<Album> = albumsData?.map { it.toAlbum() } ?: listOf()
+
+    val similarData = runRequest(
+        authenticatedRequest(
+            endpoint = "getArtistInfo2",
+            parameters = mapOf(
+                "id" to artist.id
+            ),
+        )
+    ).parseAs<GetArtistInfoDto>().subsonicResponse.similarArtist
+    val similar: List<Artist> = similarData?.map { it.toArtist() } ?: listOf()
 
     return withContext(Dispatchers.IO) {
         listOf(
@@ -57,6 +67,13 @@ suspend fun createArtistFeed(artist: Artist): Feed<Shelf> {
                     id = "albums",
                     title = "Albums",
                     list = albums,
+                    type = Shelf.Lists.Type.Linear,
+                )
+                Shelf.Lists.Items(
+                    id = "similar",
+                    title = "Similar artists",
+                    list = similar,
+                    type = Shelf.Lists.Type.Linear
                 )
             },
         ).awaitAll()

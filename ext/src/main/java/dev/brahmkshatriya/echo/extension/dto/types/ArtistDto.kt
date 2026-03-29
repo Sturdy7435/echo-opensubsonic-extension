@@ -12,7 +12,7 @@ data class ArtistDto(
     val name: String,
     val coverArt: String? = null,
 
-    val albumCount: Int?,
+    val albumCount: Int? = null,
     val album: List<AlbumDto>? = null,
 ) {
     fun toArtist(): Artist {
