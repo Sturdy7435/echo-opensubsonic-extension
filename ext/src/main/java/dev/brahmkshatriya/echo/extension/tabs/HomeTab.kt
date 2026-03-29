@@ -12,7 +12,14 @@ import kotlinx.coroutines.withContext
 suspend fun createHomeFeed(): Feed<Shelf> {
     return withContext(Dispatchers.IO) {
         listOf(
-            async { getRandomTracks() },
+            async {
+                Shelf.Lists.Items(
+                    id = "randomTracks",
+                    title = "Random Tracks",
+                    list = getRandomTracks(),
+                    type = Shelf.Lists.Type.Linear,
+                )
+            },
         ).awaitAll()
     }.toFeed()
 }

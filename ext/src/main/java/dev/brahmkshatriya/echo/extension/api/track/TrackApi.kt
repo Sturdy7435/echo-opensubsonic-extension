@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.extension.api.track
 
-import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extension.api.request.authenticatedRequest
@@ -10,9 +9,8 @@ import dev.brahmkshatriya.echo.extension.api.request.runRequest
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetRandomSongsDto
 import dev.brahmkshatriya.echo.extension.toNetworkRequest
 
-// TODO: refactor by returning a list of songs and creating the shelf in HomeTab.kt
-suspend fun getRandomTracks(): Shelf {
-    val resp = runRequest(
+suspend fun getRandomTracks(): List<Track> {
+    val songsData = runRequest(
         authenticatedRequest(
             endpoint = "getRandomSongs",
             parameters = mapOf(
@@ -20,17 +18,11 @@ suspend fun getRandomTracks(): Shelf {
             ),
         )
     ).parseAs<GetRandomSongsDto>().subsonicResponse
-    if (resp.status != "ok") {
-        handleError(resp.error)
+    if (songsData.status != "ok") {
+        handleError(songsData.error)
     }
 
-    val songs: List<Track> = resp.randomSongs!!.song.map { it.toTrack() }
-
-    return Shelf.Lists.Items(
-        id = "randomTracks",
-        title = "Random Tracks",
-        list = songs,
-    )
+    return songsData.randomSongs?.song?.map { it.toTrack() } ?: listOf()
 }
 
 fun getTrack(track: Track): Track {
