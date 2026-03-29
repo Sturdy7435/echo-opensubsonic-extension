@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.extension.dto.types
 
+import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Date
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -11,24 +12,22 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SongDto(
     val id: String,
-    val parent: String? = null,
     val isDir: Boolean,
+    //val parent: String? = null,
 
     val title: String,
     val album: String? = null,
+    val albumId: String? = null,
     val artists: List<ArtistDto>? = null,
-    val artist: String? = null,
     val track: Int? = null,
     val discNumber: Int? = null,
     val duration: Int? = null, // in seconds
     val bitRate: Int? = null,
-
     val year: Int? = null,
     val genres: List<GenreDto>? = null,
     val explicitStatus: String? = null,
     val isrc: List<String>? = null,
     val coverArt: String? = null,
-
     val contentType: String? = null,
 ) {
     companion object {
@@ -50,7 +49,7 @@ data class SongDto(
                 )
             },
             artists = artists?.map { it.toArtist() } ?: listOf(),
-            album = null,
+            album = albumId?.let { album?.let { name -> Album(id = it, title = name) } },
             duration = duration?.let { (it * 1000).toLong() },
             releaseDate = year?.let { Date(year = it) },
             genres = genres?.map { it.name } ?: listOf(),

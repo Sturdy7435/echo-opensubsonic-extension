@@ -1,24 +1,21 @@
 package dev.brahmkshatriya.echo.extension.dto.types
 
-import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.extension.api.request.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.toNetworkRequest
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ArtistDto(
+data class AlbumDto(
     val id: String,
     val name: String,
     val coverArt: String? = null,
-
-    val albumCount: Int?,
-    val album: List<AlbumDto>? = null,
 ) {
-    fun toArtist(): Artist {
-        return Artist(
+    fun toAlbum(): Album {
+        return Album(
             id = id,
-            name = name,
+            title = name,
             cover = coverArt?.let {
                 ImageHolder.NetworkRequestImageHolder(
                     request = authenticatedRequest(

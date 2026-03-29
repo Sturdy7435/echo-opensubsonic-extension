@@ -1,9 +1,11 @@
 package dev.brahmkshatriya.echo.extension
 
+import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -18,7 +20,8 @@ class OpenSubsonicExtension :
     ExtensionClient,
     HomeFeedClient,
     LoginClient.CustomInput,
-    TrackClient {
+    TrackClient,
+    ArtistClient {
 
     val api by lazy { OpenSubsonicApi() }
 
@@ -129,5 +132,15 @@ class OpenSubsonicExtension :
 
     override suspend fun loadFeed(track: Track): Feed<Shelf> {
         return createHomeFeed()
+    }
+
+    // Artists
+
+    override suspend fun loadArtist(artist: Artist): Artist {
+        return api.loadArtist(artist)
+    }
+
+    override suspend fun loadFeed(artist: Artist): Feed<Shelf> {
+        return api.loadArtistFeed(artist)
     }
 }

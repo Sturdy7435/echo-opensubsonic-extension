@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.extension.api.request.runRequest
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetRandomSongsDto
 import dev.brahmkshatriya.echo.extension.toNetworkRequest
 
+// TODO: refactor by returning a list of songs and creating the shelf in HomeTab.kt
 suspend fun getRandomTracks(): Shelf {
     val resp = runRequest(
         authenticatedRequest(

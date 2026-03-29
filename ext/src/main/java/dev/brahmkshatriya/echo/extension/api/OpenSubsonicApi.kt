@@ -1,8 +1,13 @@
 package dev.brahmkshatriya.echo.extension.api
 
+import dev.brahmkshatriya.echo.common.models.Artist
+import dev.brahmkshatriya.echo.common.models.Feed
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
+import dev.brahmkshatriya.echo.extension.api.artist.createArtistFeed
+import dev.brahmkshatriya.echo.extension.api.artist.getArtist
 import dev.brahmkshatriya.echo.extension.api.login.getUserSession
 import dev.brahmkshatriya.echo.extension.api.login.keyLogin
 import dev.brahmkshatriya.echo.extension.api.login.passwordLogin
@@ -33,5 +38,13 @@ class OpenSubsonicApi {
 
     fun loadStreamableMedia(streamable: Streamable, isDownload: Boolean): Streamable.Media {
         return getStreamableMedia(streamable, isDownload)
+    }
+
+    suspend fun loadArtist(artist: Artist): Artist {
+        return getArtist(artist)
+    }
+
+    suspend fun loadArtistFeed(artist: Artist): Feed<Shelf> {
+        return createArtistFeed(artist)
     }
 }
