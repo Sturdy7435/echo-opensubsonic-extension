@@ -89,6 +89,9 @@ android {
                 generatedProguard.absolutePath
             )
         }
+        debug {
+            isMinifyEnabled = false
+        }
     }
 }
 
