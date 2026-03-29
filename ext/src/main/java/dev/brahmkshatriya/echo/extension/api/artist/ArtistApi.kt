@@ -69,13 +69,15 @@ suspend fun createArtistFeed(artist: Artist): Feed<Shelf> {
                     list = albums,
                     type = Shelf.Lists.Type.Linear,
                 )
+            },
+            async {
                 Shelf.Lists.Items(
                     id = "similar",
                     title = "Similar artists",
                     list = similar,
                     type = Shelf.Lists.Type.Linear
                 )
-            },
+            }
         ).awaitAll()
     }.toFeed()
 }
