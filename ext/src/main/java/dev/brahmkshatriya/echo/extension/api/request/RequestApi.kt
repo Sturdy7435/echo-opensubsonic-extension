@@ -24,7 +24,7 @@ import kotlin.collections.forEach
 import kotlin.collections.plus
 import kotlin.text.Charsets.UTF_8
 
-private const val API_VERSION: String = "1"
+private const val API_VERSION: String = "1.16"
 private const val CLIENT_NAME: String = "Echo nightly"
 private const val RESPONSE_FORMAT: String = "json"
 private val COMMON_PARAMETERS: Map<String, String> = mapOf(
