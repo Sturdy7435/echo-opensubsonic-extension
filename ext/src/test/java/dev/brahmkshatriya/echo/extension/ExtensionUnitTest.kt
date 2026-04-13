@@ -30,7 +30,10 @@ import kotlin.system.measureTimeMillis
 class ExtensionUnitTest {
     private val extension: ExtensionClient = OpenSubsonicExtension()
     private val searchQuery = "Skrillex"
-    private val user = User("", "Test User")
+    private val user = User("", "demo", extras = mapOf(
+        "serverUrl" to "https://demo.navidrome.org",
+        "password" to "demo",
+    ))
 
     @Test
     fun testEmptySearch() = testIn("Testing Empty Search") {
