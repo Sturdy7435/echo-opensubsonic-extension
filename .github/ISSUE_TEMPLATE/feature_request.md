@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest an idea for this extension
-title: "[FEAT]"
+title: "[FEAT] "
 labels: enhancement
 assignees: Sturdy7435
 

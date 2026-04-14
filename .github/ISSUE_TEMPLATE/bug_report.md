@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Report a bug or an error in this extension
-title: "[BUG]"
+title: "[BUG] "
 labels: bug
 assignees: Sturdy7435
 
