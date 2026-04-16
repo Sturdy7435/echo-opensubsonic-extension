@@ -57,9 +57,6 @@ data class SongDto(
             albumOrderNumber = track?.toLong(),
             albumDiscNumber = discNumber?.toLong(),
             isExplicit = explicitStatus in EXPLICIT_VALUES,
-            extras = mapOf(
-                "coverArtID" to coverArt,
-            ).mapNotNull { (k, v) -> v?.let { k to it } }.toMap(),
             streamables = listOf(
                 Streamable.server(
                     id = id,
