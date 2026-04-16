@@ -1,10 +1,12 @@
 package dev.brahmkshatriya.echo.extension
 
+import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ArtistClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
+import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Shelf
@@ -21,7 +23,8 @@ class OpenSubsonicExtension :
     HomeFeedClient,
     LoginClient.CustomInput,
     TrackClient,
-    ArtistClient {
+    ArtistClient,
+    AlbumClient {
 
     val api by lazy { OpenSubsonicApi() }
 
@@ -142,5 +145,17 @@ class OpenSubsonicExtension :
 
     override suspend fun loadFeed(artist: Artist): Feed<Shelf> {
         return api.loadArtistFeed(artist)
+    }
+
+    override suspend fun loadAlbum(album: Album): Album {
+        return api.loadAlbum(album)
+    }
+
+    override suspend fun loadTracks(album: Album): Feed<Track>? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun loadFeed(album: Album): Feed<Shelf>? {
+        TODO("Not yet implemented")
     }
 }
