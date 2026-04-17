@@ -147,15 +147,17 @@ class OpenSubsonicExtension :
         return api.loadArtistFeed(artist)
     }
 
+    // Album
+
     override suspend fun loadAlbum(album: Album): Album {
         return api.loadAlbum(album)
     }
 
     override suspend fun loadTracks(album: Album): Feed<Track>? {
-        TODO("Not yet implemented")
+        return api.loadTracks(album)
     }
 
     override suspend fun loadFeed(album: Album): Feed<Shelf>? {
-        TODO("Not yet implemented")
+        return api.loadAlbumFeed(album)
     }
 }

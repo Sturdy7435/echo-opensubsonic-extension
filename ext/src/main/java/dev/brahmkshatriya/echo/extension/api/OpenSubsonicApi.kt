@@ -7,7 +7,9 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.models.User
+import dev.brahmkshatriya.echo.extension.api.album.createAlbumFeed
 import dev.brahmkshatriya.echo.extension.api.album.getAlbum
+import dev.brahmkshatriya.echo.extension.api.album.getTracks
 import dev.brahmkshatriya.echo.extension.api.artist.createArtistFeed
 import dev.brahmkshatriya.echo.extension.api.artist.getArtist
 import dev.brahmkshatriya.echo.extension.api.login.getUserSession
@@ -52,5 +54,13 @@ class OpenSubsonicApi {
 
     suspend fun loadAlbum(album: Album): Album {
         return getAlbum(album)
+    }
+
+    suspend fun loadTracks(album: Album): Feed<Track>? {
+        return getTracks(album)
+    }
+
+    suspend fun loadAlbumFeed(album: Album): Feed<Shelf>? {
+        return createAlbumFeed(album)
     }
 }
