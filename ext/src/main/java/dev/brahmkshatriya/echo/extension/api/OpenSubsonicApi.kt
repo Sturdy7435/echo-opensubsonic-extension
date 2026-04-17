@@ -16,10 +16,14 @@ import dev.brahmkshatriya.echo.extension.api.login.getUserSession
 import dev.brahmkshatriya.echo.extension.api.login.keyLogin
 import dev.brahmkshatriya.echo.extension.api.login.passwordLogin
 import dev.brahmkshatriya.echo.extension.api.login.setUserSession
+import dev.brahmkshatriya.echo.extension.api.track.createTrackFeed
 import dev.brahmkshatriya.echo.extension.api.track.getStreamableMedia
 import dev.brahmkshatriya.echo.extension.api.track.getTrack
 
 class OpenSubsonicApi {
+
+    // Login
+
     suspend fun onPasswordLogin(data: Map<String, String?>): List<User> {
         return passwordLogin(data)
     }
@@ -36,6 +40,8 @@ class OpenSubsonicApi {
         return getUserSession()
     }
 
+    // Track
+
     fun loadTrack(track: Track): Track {
         return getTrack(track)
     }
@@ -44,6 +50,12 @@ class OpenSubsonicApi {
         return getStreamableMedia(streamable, isDownload)
     }
 
+    fun loadTrackFeed(track: Track): Feed<Shelf>? {
+        return createTrackFeed(track)
+    }
+
+    // Artist
+
     suspend fun loadArtist(artist: Artist): Artist {
         return getArtist(artist)
     }
@@ -51,6 +63,8 @@ class OpenSubsonicApi {
     suspend fun loadArtistFeed(artist: Artist): Feed<Shelf> {
         return createArtistFeed(artist)
     }
+
+    // Album
 
     suspend fun loadAlbum(album: Album): Album {
         return getAlbum(album)

@@ -1,5 +1,7 @@
 package dev.brahmkshatriya.echo.extension.api.track
 
+import dev.brahmkshatriya.echo.common.models.Feed
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extension.api.request.authenticatedRequest
@@ -55,4 +57,9 @@ fun getStreamableMedia(streamable: Streamable, isDownload: Boolean): Streamable.
         ),
         merged = true
     )
+}
+
+@Suppress("unused")
+fun createTrackFeed(track: Track): Feed<Shelf>? {
+    return null
 }

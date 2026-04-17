@@ -133,8 +133,8 @@ class OpenSubsonicExtension :
         return api.loadStreamableMedia(streamable, isDownload)
     }
 
-    override suspend fun loadFeed(track: Track): Feed<Shelf> {
-        return createHomeFeed()
+    override suspend fun loadFeed(track: Track): Feed<Shelf>? {
+        return api.loadTrackFeed(track)
     }
 
     // Artists
