@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.extension.api.request.parseAs
 import dev.brahmkshatriya.echo.extension.api.request.runRequest
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetArtistDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetArtistInfoDto
+import dev.brahmkshatriya.echo.extension.dto.endpoints.GetArtistsDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetTopSongsDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -38,6 +39,21 @@ suspend fun getArtist(artist: Artist): Artist {
     return artistData.artist!!.toArtist().copy(
         bio = extraData.biography,
     )
+}
+
+suspend fun getArtists(): List<Artist> {
+    val artistsData = runRequest(
+        authenticatedRequest(
+            endpoint = "getArtists",
+            parameters = mapOf(),
+        )
+    ).parseAs<GetArtistsDto>().subsonicResponse
+
+    /// Create a List<Artist> from the artists inside each `artist` field of the elements of `index`
+    return artistsData.artists?.index
+        ?.flatMap { it.artist.orEmpty() }
+        ?.map { it.toArtist() }
+        ?: listOf()
 }
 
 suspend fun createArtistFeed(artist: Artist): Feed<Shelf> {
