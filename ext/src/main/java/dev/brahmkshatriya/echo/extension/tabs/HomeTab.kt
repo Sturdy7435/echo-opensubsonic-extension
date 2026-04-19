@@ -46,14 +46,14 @@ suspend fun createHomeFeed(): Feed<Shelf> {
                     title = "Genres",
                     list = genresList.map {
                         Shelf.Category(
-                            id = it,
+                            id = it.lowercase().replace(" ", ""),
                             title = it,
                             feed = null,
                         )
                     },
                     more = genresListFull.map {
                         Shelf.Category(
-                            id = it,
+                            id = it.lowercase().replace(" ", ""),
                             title = it,
                             feed = null,
                         )

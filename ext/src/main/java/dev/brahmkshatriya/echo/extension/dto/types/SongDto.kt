@@ -24,12 +24,17 @@ data class SongDto(
     val duration: Int? = null, // in seconds
     val bitRate: Int? = null,
     val year: Int? = null,
-    val genres: List<GenreDto>? = null,
+    val genres: List<ItemGenre>? = null,
     val explicitStatus: String? = null,
     val isrc: List<String>? = null,
     val coverArt: String? = null,
     val contentType: String? = null,
 ) {
+    @Serializable
+    data class ItemGenre(
+        val name: String,
+    )
+
     companion object {
         private val EXPLICIT_VALUES = setOf("explicit", "1", "4")
     }

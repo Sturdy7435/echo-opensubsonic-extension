@@ -13,5 +13,5 @@ suspend fun getGenres(): List<String> {
         )
     ).parseAs<GetGenresDto>().subsonicResponse
 
-    return genresData.genres?.genre?.map { it.name } ?: listOf()
+    return genresData.genres?.genre?.map { it.value } ?: listOf()
 }
