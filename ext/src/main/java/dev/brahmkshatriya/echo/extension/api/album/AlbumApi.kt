@@ -9,6 +9,7 @@ import dev.brahmkshatriya.echo.extension.api.request.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.api.request.parseAs
 import dev.brahmkshatriya.echo.extension.api.request.runRequest
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetAlbumDto
+import dev.brahmkshatriya.echo.extension.dto.endpoints.GetAlbumListDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetArtistDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -41,6 +42,21 @@ suspend fun getTracks(album: Album): Feed<Track>? {
     return albumData.album!!.song?.map { it.toTrack() }?.toFeed()
 }
 
+suspend fun getAlbumList(type: AlbumListType, count: Int, offset: Int = 0): List<Album> {
+    val albumListData = runRequest(
+        authenticatedRequest(
+            endpoint = "getAlbumList2",
+            parameters = mapOf(
+                "type" to type.id,
+                "size" to count.toString(),
+                "offset" to offset.toString()
+            ),
+        )
+    ).parseAs<GetAlbumListDto>().subsonicResponse
+
+    return albumListData.albumList2?.album?.map { it.toAlbum() } ?: listOf()
+}
+
 suspend fun createAlbumFeed(album: Album): Feed<Shelf>? {
     val artist = album.artists.firstOrNull() ?: return null
     val otherAlbumsData = runRequest(
@@ -65,4 +81,16 @@ suspend fun createAlbumFeed(album: Album): Feed<Shelf>? {
             },
         ).awaitAll()
     }.toFeed()
+}
+
+@Suppress("unused")
+enum class AlbumListType(val id: String) {
+    Random("random"),
+    Newest("newest"),
+    Highest("highest"),
+    Frequent("frequent"),
+    Recent("recent"),
+    AlphabeticalByName("alphabeticalByName"),
+    AlphabeticalByArtist("alphabeticalByArtist"),
+    Starred("starred");
 }

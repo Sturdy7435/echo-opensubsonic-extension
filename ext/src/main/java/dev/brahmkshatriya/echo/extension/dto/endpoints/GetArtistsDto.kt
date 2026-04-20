@@ -18,7 +18,7 @@ data class GetArtistsDto(
         val artists: ArtistsDto? = null,
     ) {
         @Serializable
-        data class ArtistsDto (
+        data class ArtistsDto(
             val index: List<IndexDto>? = null,
         )
     }

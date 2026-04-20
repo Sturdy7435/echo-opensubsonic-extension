@@ -1,9 +1,14 @@
 package dev.brahmkshatriya.echo.extension.tabs
 
+import dev.brahmkshatriya.echo.common.helpers.Page
+import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeed
 import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.extension.api.album.AlbumListType
+import dev.brahmkshatriya.echo.extension.api.album.getAlbumList
 import dev.brahmkshatriya.echo.extension.api.artist.getArtists
 import dev.brahmkshatriya.echo.extension.api.genre.getGenres
 import dev.brahmkshatriya.echo.extension.api.track.getRandomTracks
@@ -21,6 +26,28 @@ suspend fun createHomeFeed(): Feed<Shelf> {
                     title = "Random Tracks",
                     list = getRandomTracks(),
                     type = Shelf.Lists.Type.Linear,
+                )
+            },
+            async {
+                val pageSize = 20
+                val albumListFull = PagedData.Continuous { continuation ->
+                    val contInt = continuation?.toIntOrNull() ?: 0
+
+                    val albums: List<Shelf> =
+                        getAlbumList(AlbumListType.AlphabeticalByName, pageSize, contInt)
+                            .map { it.toShelf() }
+
+                    if (albums.size < pageSize) Page(albums, null)
+                    else Page(albums, (contInt + pageSize).toString())
+                }.toFeed()
+                val albumList: List<Album> = getAlbumList(AlbumListType.Random, 10)
+
+                Shelf.Lists.Items(
+                    id = "albums",
+                    title = "Albums",
+                    list = albumList,
+                    more = albumListFull,
+                    type = Shelf.Lists.Type.Linear
                 )
             },
             async {
