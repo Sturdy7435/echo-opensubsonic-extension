@@ -11,13 +11,14 @@ import dev.brahmkshatriya.echo.extension.api.request.runRequest
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetRandomSongsDto
 import dev.brahmkshatriya.echo.extension.toNetworkRequest
 
-suspend fun getRandomTracks(): List<Track> {
+suspend fun getRandomTracks(count: Int, genre: String? = null): List<Track> {
     val songsData = runRequest(
         authenticatedRequest(
             endpoint = "getRandomSongs",
             parameters = mapOf(
-                "size" to "20",
-            ),
+                "size" to count.toString(),
+                "genre" to genre,
+            ).filterValues { it != null }.mapValues { it.value!! },
         )
     ).parseAs<GetRandomSongsDto>().subsonicResponse
     if (songsData.status != "ok") {

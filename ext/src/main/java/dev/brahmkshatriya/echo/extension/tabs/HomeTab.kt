@@ -10,6 +10,7 @@ import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.extension.api.album.AlbumListType
 import dev.brahmkshatriya.echo.extension.api.album.getAlbumList
 import dev.brahmkshatriya.echo.extension.api.artist.getArtists
+import dev.brahmkshatriya.echo.extension.api.genre.createGenreFeed
 import dev.brahmkshatriya.echo.extension.api.genre.getGenres
 import dev.brahmkshatriya.echo.extension.api.track.getRandomTracks
 import kotlinx.coroutines.Dispatchers
@@ -24,11 +25,12 @@ suspend fun createHomeFeed(): Feed<Shelf> {
                 Shelf.Lists.Items(
                     id = "randomTracks",
                     title = "Random Tracks",
-                    list = getRandomTracks(),
+                    list = getRandomTracks(20),
                     type = Shelf.Lists.Type.Linear,
                 )
             },
             async {
+                val albumList: List<Album> = getAlbumList(AlbumListType.Random, 10)
                 val pageSize = 20
                 val albumListFull = PagedData.Continuous { continuation ->
                     val contInt = continuation?.toIntOrNull() ?: 0
@@ -40,7 +42,6 @@ suspend fun createHomeFeed(): Feed<Shelf> {
                     if (albums.size < pageSize) Page(albums, null)
                     else Page(albums, (contInt + pageSize).toString())
                 }.toFeed()
-                val albumList: List<Album> = getAlbumList(AlbumListType.Random, 10)
 
                 Shelf.Lists.Items(
                     id = "albums",
@@ -64,6 +65,8 @@ suspend fun createHomeFeed(): Feed<Shelf> {
                 )
             },
             async {
+                // FIXME: too many requests during reload but it works
+
                 val genresListFull: List<String> = getGenres()
                 val genresList: List<String> =
                     genresListFull.shuffled().subList(0, 8.coerceAtMost(genresListFull.size))
@@ -75,14 +78,14 @@ suspend fun createHomeFeed(): Feed<Shelf> {
                         Shelf.Category(
                             id = it.lowercase().replace(" ", ""),
                             title = it,
-                            feed = null,
+                            feed = createGenreFeed(it),
                         )
                     },
                     more = genresListFull.map {
                         Shelf.Category(
                             id = it.lowercase().replace(" ", ""),
                             title = it,
-                            feed = null,
+                            feed = createGenreFeed(it),
                         )
                     }.toFeed(),
                     type = Shelf.Lists.Type.Grid
