@@ -1,8 +1,8 @@
 [versions]
 echoCommon = "1.0.0"
 kotlin = "2.3.20"
-agp = "9.1.0"
-gradleShadow = "9.4.0"
+agp = "9.1.1"
+gradleShadow = "9.4.1"
 
 [libraries]
 echo-common = { module = "dev.brahmkshatriya.echo:common", version.ref = "echoCommon" }
