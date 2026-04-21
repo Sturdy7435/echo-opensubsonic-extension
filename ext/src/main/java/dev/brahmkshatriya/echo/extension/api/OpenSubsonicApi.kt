@@ -50,7 +50,7 @@ class OpenSubsonicApi {
         return getStreamableMedia(streamable, isDownload)
     }
 
-    fun loadTrackFeed(track: Track): Feed<Shelf>? {
+    suspend fun loadTrackFeed(track: Track): Feed<Shelf> {
         return createTrackFeed(track)
     }
 
