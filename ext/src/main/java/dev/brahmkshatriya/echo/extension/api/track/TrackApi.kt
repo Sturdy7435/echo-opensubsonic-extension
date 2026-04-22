@@ -86,8 +86,8 @@ suspend fun createTrackFeed(track: Track): Feed<Shelf> {
         listOf(
             async {
                 Shelf.Lists.Items(
-                    id = "otherAlbums",
-                    title = "More from this artist",
+                    id = "similar",
+                    title = "Similar tracks",
                     list = getSimilarTracks(track, 20),
                     type = Shelf.Lists.Type.Linear,
                 )
