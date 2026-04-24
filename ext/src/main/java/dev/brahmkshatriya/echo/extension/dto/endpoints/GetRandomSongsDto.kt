@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GetRandomSongsDto(
     @SerialName("subsonic-response")
-    val subsonicResponse: SubsonicResponseDto
+    val subsonicResponse: SubsonicResponseDto,
 ) {
     @Serializable
     data class SubsonicResponseDto(

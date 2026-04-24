@@ -1,10 +1,10 @@
-package dev.brahmkshatriya.echo.extension
+package dev.brahmkshatriya.echo.extension.service.session
 
 import dev.brahmkshatriya.echo.common.settings.Setting
 import dev.brahmkshatriya.echo.common.settings.SettingSwitch
 import dev.brahmkshatriya.echo.common.settings.Settings
 
-object SettingsObject {
+object SettingsSession {
     var current: Settings? = null
 
     val forceGetRequests get() = current?.getBoolean("force_get_requests") ?: false

@@ -5,8 +5,8 @@ import dev.brahmkshatriya.echo.common.models.Date
 import dev.brahmkshatriya.echo.common.models.ImageHolder
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.extension.api.request.authenticatedRequest
-import dev.brahmkshatriya.echo.extension.toNetworkRequest
+import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
+import dev.brahmkshatriya.echo.extension.service.request.RequestService.toNetworkRequest
 import kotlinx.serialization.Serializable
 
 @Serializable

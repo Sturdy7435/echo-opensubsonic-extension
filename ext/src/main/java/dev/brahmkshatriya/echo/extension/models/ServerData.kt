@@ -1,12 +1,10 @@
-package dev.brahmkshatriya.echo.extension.api.login
+package dev.brahmkshatriya.echo.extension.models
 
-import dev.brahmkshatriya.echo.common.models.ImageHolder
 import java.util.EnumSet
-import kotlin.collections.joinToString
 
-data class Server(
+data class ServerData(
     val url: String,
-    val extensions: EnumSet<Extension>?
+    val extensions: EnumSet<Extension>?,
 ) {
     enum class Extension(val id: String) {
         ApiKeyAuthentication("apiKeyAuthentication"),
@@ -44,18 +42,5 @@ data class Server(
                 return set
             }
         }
-    }
-}
-
-data class UserData(
-    val username: String,
-    val email: String?,
-    val avatar: ImageHolder?,
-    val server: Server?,
-    val password: String?,
-    val apiKey: String?,
-) {
-    companion object {
-        val EMPTY = UserData("", null, null, null, null, null)
     }
 }

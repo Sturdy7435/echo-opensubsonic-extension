@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GetGenresDto(
     @SerialName("subsonic-response")
-    val subsonicResponse: SubsonicResponseDto
+    val subsonicResponse: SubsonicResponseDto,
 ) {
     @Serializable
     data class SubsonicResponseDto(
@@ -19,7 +19,7 @@ data class GetGenresDto(
     ) {
         @Serializable
         data class GenresDto(
-            val genre: List<GenreDto>
+            val genre: List<GenreDto>,
         )
     }
 }

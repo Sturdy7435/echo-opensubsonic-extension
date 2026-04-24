@@ -8,13 +8,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GetAlbumDto(
     @SerialName("subsonic-response")
-    val subsonicResponse: SubsonicResponseDto
+    val subsonicResponse: SubsonicResponseDto,
 ) {
     @Serializable
     data class SubsonicResponseDto(
         val status: String,
         val error: ErrorDto? = null,
 
-        val album: AlbumDto? = null
+        val album: AlbumDto? = null,
     )
 }
