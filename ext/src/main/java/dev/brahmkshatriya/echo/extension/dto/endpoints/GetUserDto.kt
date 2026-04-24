@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GetUserDto(
     @SerialName("subsonic-response")
-    val subsonicResponse: SubsonicResponseDto
+    val subsonicResponse: SubsonicResponseDto,
 ) {
     @Serializable
     data class SubsonicResponseDto(

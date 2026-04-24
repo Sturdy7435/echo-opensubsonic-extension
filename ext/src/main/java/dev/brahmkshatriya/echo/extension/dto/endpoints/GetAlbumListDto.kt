@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GetAlbumListDto(
     @SerialName("subsonic-response")
-    val subsonicResponse: SubsonicResponseDto
+    val subsonicResponse: SubsonicResponseDto,
 ) {
     @Serializable
     data class SubsonicResponseDto(
@@ -18,7 +18,7 @@ data class GetAlbumListDto(
         val albumList2: AlbumListDto? = null,
     ) {
         @Serializable
-        data class AlbumListDto (
+        data class AlbumListDto(
             val album: List<AlbumDto>? = null,
         )
     }
