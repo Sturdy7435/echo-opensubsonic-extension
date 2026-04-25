@@ -1,6 +1,5 @@
 package dev.brahmkshatriya.echo.extension.service.request
 
-import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.await
 import dev.brahmkshatriya.echo.common.models.NetworkRequest
 import dev.brahmkshatriya.echo.extension.clients.login.LoginClientImpl.Companion.checkAuth
@@ -88,7 +87,7 @@ object RequestService {
     // REQUESTS
 
     fun get(
-        baseUrl: String = getCurrentUser().server?.url ?: throw ClientException.LoginRequired(),
+        baseUrl: String,
         endpoint: String,
         parameters: Map<String, String> = mapOf(),
     ): Request {
@@ -107,7 +106,7 @@ object RequestService {
     }
 
     fun post(
-        baseUrl: String = getCurrentUser().server?.url ?: throw ClientException.LoginRequired(),
+        baseUrl: String,
         endpoint: String,
         parameters: Map<String, String> = mapOf(),
     ): Request {
