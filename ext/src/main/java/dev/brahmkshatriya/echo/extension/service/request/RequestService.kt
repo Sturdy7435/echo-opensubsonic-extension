@@ -38,29 +38,27 @@ object RequestService {
     private val DEFAULT_HEADERS = Headers.Builder().build()
 
     private val rng = SecureRandom()
+    private val md5 = MessageDigest.getInstance("MD5")
     private val httpClient = OkHttpClient()
     val json = Json { ignoreUnknownKeys = true }
 
-    // CREDENTIALS
+    // AUTHENTICATION
 
     private fun generateSalt(length: Int = 8): String {
-        val charPool = ('a'..'z') + ('A'..'Z') + ('0'..'9') + '-' + '_'
+        val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9') + '-' + '_'
 
         return buildString(length) {
             repeat(length) {
-                val char = charPool[rng.nextInt(charPool.size)]
-                append(char)
+                append(charPool[rng.nextInt(charPool.size)])
             }
         }
     }
 
-    private fun computeToken(password: String, salt: String): String {
-        val md = MessageDigest.getInstance("MD5")
-        val input = (password + salt).toByteArray(UTF_8)
-
-        return md.digest(input).joinToString("") {
-            "%02x".format(it)
-        }
+    private fun generateToken(password: String, salt: String): String {
+        return md5.digest((password + salt).toByteArray(UTF_8))
+            .joinToString("") {
+                "%02x".format(it)
+            }
     }
 
     private fun appendAuthParameters(
@@ -69,20 +67,21 @@ object RequestService {
     ): Map<String, String> {
         checkAuth(credentials)
 
-        val k = credentials.apiKey
-        if (k != null) {
+        credentials.apiKey?.let {
             return parameters + mapOf(
-                "apiKey" to k,
+                "apiKey" to it,
             )
         }
 
-        val salt = generateSalt()
-        val token = computeToken(credentials.password!!, salt)
-        return parameters + mapOf(
-            "u" to credentials.username,
-            "t" to token,
-            "s" to salt,
-        )
+        credentials.password!!.let {
+            val salt = generateSalt()
+            val token = generateToken(it, salt)
+            return parameters + mapOf(
+                "u" to credentials.username,
+                "t" to token,
+                "s" to salt,
+            )
+        }
     }
 
     // REQUESTS
