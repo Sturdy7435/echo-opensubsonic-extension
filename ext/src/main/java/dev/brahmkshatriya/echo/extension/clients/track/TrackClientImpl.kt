@@ -9,9 +9,9 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetRandomSongsDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetSimilarSongsDto
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
-import dev.brahmkshatriya.echo.extension.service.request.RequestService.handleError
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.parseAs
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.runRequest
+import dev.brahmkshatriya.echo.extension.service.request.RequestService.throwOnError
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.toNetworkRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -81,7 +81,7 @@ class TrackClientImpl : TrackClient {
                 )
             ).parseAs<GetRandomSongsDto>().subsonicResponse
             if (songsData.status != "ok") {
-                handleError(songsData.error)
+                throwOnError(songsData.error)
             }
 
             return songsData.randomSongs?.song?.map { it.toTrack() } ?: listOf()

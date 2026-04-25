@@ -167,11 +167,10 @@ object RequestService {
         )
     }
 
-    fun handleError(error: ErrorDto?) {
-        if (error == null) {
-            throw Exception("Unknown error")
-        }
-        throw Exception("Error " + error.code + ": " + (error.message ?: "Generic error"))
+    fun throwOnError(error: ErrorDto?) {
+        throw error?.let {
+            Exception("Error " + it.code + ": " + (it.message ?: "Unknown error"))
+        } ?: Exception("Unknown error")
     }
 
     @OptIn(ExperimentalSerializationApi::class)

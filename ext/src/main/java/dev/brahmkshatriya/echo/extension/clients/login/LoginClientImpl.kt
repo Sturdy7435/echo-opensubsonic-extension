@@ -11,9 +11,9 @@ import dev.brahmkshatriya.echo.extension.models.ServerData
 import dev.brahmkshatriya.echo.extension.models.UserData
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.get
-import dev.brahmkshatriya.echo.extension.service.request.RequestService.handleError
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.parseAs
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.runRequest
+import dev.brahmkshatriya.echo.extension.service.request.RequestService.throwOnError
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.toNetworkRequest
 import dev.brahmkshatriya.echo.extension.service.session.UserSession
 import okhttp3.Response
@@ -147,7 +147,7 @@ class LoginClientImpl : LoginClient.CustomInput {
 
         val data = resp.parseAs<GetOpenSubsonicExtensionsDto>().subsonicResponse
         if (data.status != "ok") {
-            handleError(data.error)
+            throwOnError(data.error)
         }
         val extensions: EnumSet<ServerData.Extension> =
             EnumSet.noneOf(ServerData.Extension::class.java)
@@ -180,7 +180,7 @@ class LoginClientImpl : LoginClient.CustomInput {
             )
         ).parseAs<GetUserDto>().subsonicResponse
         if (loginData.status != "ok") {
-            handleError(loginData.error)
+            throwOnError(loginData.error)
         }
 
         val avatar: ImageHolder = ImageHolder.NetworkRequestImageHolder(
@@ -224,7 +224,7 @@ class LoginClientImpl : LoginClient.CustomInput {
             )
         ).parseAs<TokenInfoDto>().subsonicResponse
         if (tokenData.status != "ok") {
-            handleError(tokenData.error)
+            throwOnError(tokenData.error)
         }
         val username = tokenData.tokenInfo!!.username
 
@@ -238,7 +238,7 @@ class LoginClientImpl : LoginClient.CustomInput {
             )
         ).parseAs<GetUserDto>().subsonicResponse
         if (loginData.status != "ok") {
-            handleError(loginData.error)
+            throwOnError(loginData.error)
         }
 
         val avatar = ImageHolder.NetworkRequestImageHolder(
