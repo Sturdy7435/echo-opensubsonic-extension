@@ -1,5 +1,6 @@
 package dev.brahmkshatriya.echo.extension.service.request
 
+import dev.brahmkshatriya.echo.common.helpers.ClientException
 import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.await
 import dev.brahmkshatriya.echo.common.models.NetworkRequest
 import dev.brahmkshatriya.echo.extension.clients.login.LoginClientImpl.Companion.checkAuth
@@ -87,7 +88,7 @@ object RequestService {
     // REQUESTS
 
     fun get(
-        baseUrl: String = getCurrentUser().server?.url ?: "",
+        baseUrl: String = getCurrentUser().server?.url ?: throw ClientException.LoginRequired(),
         endpoint: String,
         parameters: Map<String, String> = mapOf(),
     ): Request {
@@ -106,7 +107,7 @@ object RequestService {
     }
 
     fun post(
-        baseUrl: String = getCurrentUser().server?.url ?: "",
+        baseUrl: String = getCurrentUser().server?.url ?: throw ClientException.LoginRequired(),
         endpoint: String,
         parameters: Map<String, String> = mapOf(),
     ): Request {
@@ -130,16 +131,19 @@ object RequestService {
     fun authenticatedRequest(
         endpoint: String,
         parameters: Map<String, String> = mapOf(),
+        needsGet: Boolean = false,
         credentials: UserData = getCurrentUser(),
     ): Request {
-        val p = appendAuthParameters(parameters, credentials)
+        val params: Map<String, String> = appendAuthParameters(parameters, credentials)
         val server: ServerData = credentials.server!!
+        val supportsPost: Boolean =
+            server.extensions?.contains(ServerData.Extension.FormPost) ?: false
 
-        val supportsPost = server.extensions?.contains(ServerData.Extension.FormPost) ?: false
-        if (supportsPost && !SettingsSession.forceGetRequests) {
-            return post(baseUrl = server.url, endpoint = endpoint, parameters = p)
+        return if (supportsPost && !needsGet && !SettingsSession.forceGetRequests) {
+            post(baseUrl = server.url, endpoint = endpoint, parameters = params)
+        } else {
+            get(baseUrl = server.url, endpoint = endpoint, parameters = params)
         }
-        return get(baseUrl = server.url, endpoint = endpoint, parameters = p)
     }
 
     suspend fun runRequest(
