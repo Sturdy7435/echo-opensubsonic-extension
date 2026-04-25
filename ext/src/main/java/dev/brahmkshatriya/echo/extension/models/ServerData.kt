@@ -20,26 +20,21 @@ data class ServerData(
             private val ID_TO_NAME: Map<String, Extension> = entries.associateBy { it.id }
 
             fun serialize(extensions: EnumSet<Extension>?): String? {
-                if (extensions == null) {
-                    return null
-                }
-                return extensions.joinToString(",") { it.id }
+                return extensions?.joinToString(",") { it.id }
             }
 
             fun deserialize(s: String?): EnumSet<Extension>? {
-                if (s == null) {
-                    return null
+                return s?.let { str ->
+                    EnumSet.noneOf(Extension::class.java).apply {
+                        if (str.isNotBlank()) {
+                            str.split(",")
+                                .map { it.trim() }
+                                .filter { it.isNotEmpty() }
+                                .mapNotNull { id -> ID_TO_NAME[id] }
+                                .forEach { add(it) }
+                        }
+                    }
                 }
-
-                val set = EnumSet.noneOf(Extension::class.java)
-                if (s.isNotBlank()) {
-                    s.split(",")
-                        .map { it.trim() }
-                        .filter { it.isNotEmpty() }
-                        .mapNotNull { id -> ID_TO_NAME[id] }
-                        .forEach { set.add(it) }
-                }
-                return set
             }
         }
     }
