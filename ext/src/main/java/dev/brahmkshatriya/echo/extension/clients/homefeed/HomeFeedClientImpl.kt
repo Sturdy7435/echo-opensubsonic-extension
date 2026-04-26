@@ -50,7 +50,7 @@ class HomeFeedClientImpl : HomeFeedClient {
                         title = "Albums",
                         list = albumList,
                         more = albumListFull,
-                        type = Shelf.Lists.Type.Linear
+                        type = Shelf.Lists.Type.Linear,
                     )
                 },
                 async {
@@ -63,7 +63,7 @@ class HomeFeedClientImpl : HomeFeedClient {
                         title = "Artists",
                         list = artistList,
                         more = artistListFull.map { it.toShelf() }.toFeed(),
-                        type = Shelf.Lists.Type.Linear
+                        type = Shelf.Lists.Type.Linear,
                     )
                 },
                 async {
@@ -90,7 +90,7 @@ class HomeFeedClientImpl : HomeFeedClient {
                                 feed = createGenreFeed(it),
                             )
                         }.toFeed(),
-                        type = Shelf.Lists.Type.Grid
+                        type = Shelf.Lists.Type.Grid,
                     )
                 },
             ).awaitAll()
