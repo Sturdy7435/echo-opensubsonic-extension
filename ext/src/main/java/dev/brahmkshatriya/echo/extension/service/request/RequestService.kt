@@ -98,7 +98,7 @@ object RequestService {
                     addPathSegment(endpoint)
 
                     (COMMON_PARAMETERS + parameters).forEach { addQueryParameter(it.key, it.value) }
-                }.build()
+                }.build(),
             )
             .headers(DEFAULT_HEADERS)
             .cacheControl(DEFAULT_CACHE_CONTROL)
@@ -115,12 +115,12 @@ object RequestService {
                 baseUrl.toHttpUrl().newBuilder().apply {
                     addPathSegment("rest")
                     addPathSegment(endpoint)
-                }.build()
+                }.build(),
             )
             .post(
                 FormBody.Builder().apply {
                     (COMMON_PARAMETERS + parameters).forEach { add(it.key, it.value) }
-                }.build()
+                }.build(),
             )
             .headers(DEFAULT_HEADERS)
             .cacheControl(DEFAULT_CACHE_CONTROL)

@@ -67,8 +67,8 @@ data class SongDto(
                     id = id,
                     quality = bitRate ?: 0,
                     title = "${bitRate ?: 0}kbps",
-                )
-            )
+                ),
+            ),
         )
     }
 }
