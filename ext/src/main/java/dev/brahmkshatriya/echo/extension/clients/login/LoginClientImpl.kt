@@ -8,6 +8,7 @@ import dev.brahmkshatriya.echo.extension.dto.endpoints.GetOpenSubsonicExtensions
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetUserDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.TokenInfoDto
 import dev.brahmkshatriya.echo.extension.models.ServerData
+import dev.brahmkshatriya.echo.extension.models.ServerData.Extension.Companion.ID_TO_NAME
 import dev.brahmkshatriya.echo.extension.models.UserData
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.get
@@ -18,6 +19,7 @@ import dev.brahmkshatriya.echo.extension.service.request.RequestService.toNetwor
 import dev.brahmkshatriya.echo.extension.service.session.UserSession
 import okhttp3.Response
 import java.net.MalformedURLException
+import java.net.SocketTimeoutException
 import java.net.URISyntaxException
 import java.net.UnknownHostException
 import java.util.EnumSet
@@ -116,17 +118,23 @@ class LoginClientImpl : LoginClient.CustomInput {
             name = user.username,
             cover = user.avatar,
             subtitle = null,
-            extras = mapOf(
-                "serverUrl" to user.server?.url,
-                "serverExtensions" to ServerData.Extension.serialize(user.server?.extensions)
-            ).mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
+            extras = buildMap {
+                user.server?.url?.let { put("serverUrl", it) }
+                user.server?.extensions
+                    ?.let { ServerData.Extension.serialize(it) }
+                    ?.let { put("serverExtensions", it) }
+            },
         )
     }
 
+    /**
+     * Returns the OpenSubsonic extensions supported by the server.
+     * As this should be the first request executed, it must catch any exceptions caused by an
+     * invalid URL.
+     */
     private suspend fun getServerExtensions(url: String): EnumSet<ServerData.Extension> {
-        val resp: Response
-        try {
-            resp = runRequest(
+        val resp: Response = try {
+            runRequest(
                 get(
                     baseUrl = url,
                     endpoint = "getOpenSubsonicExtensions",
@@ -134,37 +142,40 @@ class LoginClientImpl : LoginClient.CustomInput {
             )
         } catch (e: Exception) {
             when (e) {
-                is MalformedURLException, is URISyntaxException, is UnknownHostException -> throw Exception(
-                    "Invalid server address"
-                )
+                is MalformedURLException, is URISyntaxException, is UnknownHostException -> {
+                    throw Exception("Invalid server address")
+                }
 
-                else -> throw e
+                is SocketTimeoutException -> {
+                    throw Exception("Connection timed out, check server availability")
+                }
+
+                else -> {
+                    throw e
+                }
             }
         }
-        if (resp.code == 404) {
-            throw Exception("Invalid server address")
+        if (!resp.isSuccessful) {
+            throw Exception("Server returned error ${resp.code}: ${resp.message}")
         }
 
         val data = resp.parseAs<GetOpenSubsonicExtensionsDto>().subsonicResponse
         if (data.status != "ok") {
             throwOnError(data.error)
         }
-        val extensions: EnumSet<ServerData.Extension> =
-            EnumSet.noneOf(ServerData.Extension::class.java)
-        data.openSubsonicExtensions!!.forEach {
-            ServerData.Extension.entries.forEach { entry ->
-                if (it.name == entry.id) {
-                    extensions.add(entry)
-                }
-            }
+
+        return ServerData.Extension.EMPTY.apply {
+            data.openSubsonicExtensions!!
+                .mapNotNull { ID_TO_NAME[it.name] }
+                .forEach { add(it) }
         }
-        return extensions
     }
 
     private suspend fun passwordLogin(data: Map<String, String?>): List<User> {
         val url: String = data["address"]!!
         val server = ServerData(
-            url = url, extensions = getServerExtensions(url)
+            url = url,
+            extensions = getServerExtensions(url),
         )
         val tmp = UserData.EMPTY.copy(
             username = data["username"]!!,
@@ -174,10 +185,12 @@ class LoginClientImpl : LoginClient.CustomInput {
 
         val loginData = runRequest(
             authenticatedRequest(
-                endpoint = "getUser", parameters = mapOf(
+                endpoint = "getUser",
+                parameters = mapOf(
                     "username" to tmp.username,
-                ), credentials = tmp
-            )
+                ),
+                credentials = tmp,
+            ),
         ).parseAs<GetUserDto>().subsonicResponse
         if (loginData.status != "ok") {
             throwOnError(loginData.error)
@@ -185,32 +198,36 @@ class LoginClientImpl : LoginClient.CustomInput {
 
         val avatar: ImageHolder = ImageHolder.NetworkRequestImageHolder(
             authenticatedRequest(
-                endpoint = "getAvatar", parameters = mapOf(
+                endpoint = "getAvatar",
+                parameters = mapOf(
                     "username" to tmp.username,
-                ), credentials = tmp
+                ),
+                needsGet = true,
+                credentials = tmp,
             ).toNetworkRequest(),
             crop = false,
         )
 
-        val user = User(
-            id = tmp.username,
-            name = tmp.username,
-            cover = avatar,
-            subtitle = loginData.user?.email,
-            extras = mapOf(
-                "password" to tmp.password!!,
-                "serverUrl" to server.url,
-                "serverExtensions" to ServerData.Extension.serialize(server.extensions)!!,
+        return listOf(
+            User(
+                id = tmp.username,
+                name = tmp.username,
+                cover = avatar,
+                subtitle = loginData.user?.email,
+                extras = mapOf(
+                    "password" to tmp.password!!,
+                    "serverUrl" to server.url,
+                    "serverExtensions" to ServerData.Extension.serialize(server.extensions)!!,
+                ),
             ),
         )
-
-        return listOf(user)
     }
 
     private suspend fun keyLogin(data: Map<String, String?>): List<User> {
         val url: String = data["address"]!!
         val server = ServerData(
-            url = url, extensions = getServerExtensions(url)
+            url = url,
+            extensions = getServerExtensions(url),
         )
         val tmp = UserData.EMPTY.copy(
             apiKey = data["apiKey"]!!,
@@ -221,7 +238,7 @@ class LoginClientImpl : LoginClient.CustomInput {
             authenticatedRequest(
                 endpoint = "tokenInfo",
                 credentials = tmp,
-            )
+            ),
         ).parseAs<TokenInfoDto>().subsonicResponse
         if (tokenData.status != "ok") {
             throwOnError(tokenData.error)
@@ -235,7 +252,7 @@ class LoginClientImpl : LoginClient.CustomInput {
                     "username" to username,
                 ),
                 credentials = tmp,
-            )
+            ),
         ).parseAs<GetUserDto>().subsonicResponse
         if (loginData.status != "ok") {
             throwOnError(loginData.error)
@@ -247,24 +264,25 @@ class LoginClientImpl : LoginClient.CustomInput {
                 parameters = mapOf(
                     "username" to username,
                 ),
+                needsGet = true,
                 credentials = tmp,
             ).toNetworkRequest(),
             crop = false,
         )
 
-        val user = User(
-            id = username,
-            name = username,
-            cover = avatar,
-            subtitle = loginData.user?.email,
-            extras = mapOf(
-                "apiKey" to tmp.apiKey!!,
-                "serverUrl" to url,
-                "serverExtensions" to ServerData.Extension.serialize(server.extensions)!!,
+        return listOf(
+            User(
+                id = username,
+                name = username,
+                cover = avatar,
+                subtitle = loginData.user?.email,
+                extras = mapOf(
+                    "apiKey" to tmp.apiKey!!,
+                    "serverUrl" to url,
+                    "serverExtensions" to ServerData.Extension.serialize(server.extensions)!!,
+                ),
             ),
         )
-
-        return listOf(user)
     }
 
     companion object {

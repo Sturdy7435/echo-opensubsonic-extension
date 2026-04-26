@@ -17,7 +17,8 @@ data class ServerData(
         Transcoding("transcoding");
 
         companion object {
-            private val ID_TO_NAME: Map<String, Extension> = entries.associateBy { it.id }
+            val ID_TO_NAME: Map<String, Extension> = entries.associateBy { it.id }
+            val EMPTY: EnumSet<Extension> = EnumSet.noneOf(Extension::class.java)
 
             fun serialize(extensions: EnumSet<Extension>?): String? {
                 return extensions?.joinToString(",") { it.id }
@@ -25,7 +26,7 @@ data class ServerData(
 
             fun deserialize(s: String?): EnumSet<Extension>? {
                 return s?.let { str ->
-                    EnumSet.noneOf(Extension::class.java).apply {
+                    Extension.EMPTY.apply {
                         if (str.isNotBlank()) {
                             str.split(",")
                                 .map { it.trim() }
