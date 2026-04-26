@@ -19,6 +19,10 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 
 class TrackClientImpl : TrackClient {
+    /*
+     * OpenSubsonic servers never return partial tracks (Child type in the API), so no further
+     * operation is needed when loading them
+     */
     override suspend fun loadTrack(track: Track, isDownload: Boolean): Track {
         return track
     }
@@ -27,30 +31,40 @@ class TrackClientImpl : TrackClient {
         streamable: Streamable,
         isDownload: Boolean,
     ): Streamable.Media {
-        return Streamable.Media.Server(
-            sources = listOf(
-                Streamable.Source.Http(
-                    request = if (isDownload) {
-                        authenticatedRequest(
+        if (isDownload) {
+            return Streamable.Media.Server(
+                sources = listOf(
+                    Streamable.Source.Http(
+                        request = authenticatedRequest(
                             endpoint = "download",
                             parameters = mapOf(
                                 "id" to streamable.id,
                             ),
-                        ).toNetworkRequest()
-                    } else {
-                        authenticatedRequest(
-                            endpoint = "stream",
-                            parameters = mapOf(
-                                "id" to streamable.id,
-                            ),
-                        ).toNetworkRequest()
-                    },
+                        ).toNetworkRequest(),
+                        type = Streamable.SourceType.Progressive,
+                        quality = streamable.quality,
+                        title = streamable.title,
+                    ),
+                ),
+                merged = false,
+            )
+        }
+
+        return Streamable.Media.Server(
+            sources = listOf(
+                Streamable.Source.Http(
+                    request = authenticatedRequest(
+                        endpoint = "stream",
+                        parameters = mapOf(
+                            "id" to streamable.id,
+                        ),
+                    ).toNetworkRequest(),
                     type = Streamable.SourceType.Progressive,
                     quality = streamable.quality,
                     title = streamable.title,
                 ),
             ),
-            merged = true
+            merged = false,
         )
     }
 
@@ -78,7 +92,7 @@ class TrackClientImpl : TrackClient {
                         "size" to count.toString(),
                         "genre" to genre,
                     ).filterValues { it != null }.mapValues { it.value!! },
-                )
+                ),
             ).parseAs<GetRandomSongsDto>().subsonicResponse
             if (songsData.status != "ok") {
                 throwOnError(songsData.error)
@@ -96,8 +110,11 @@ class TrackClientImpl : TrackClient {
                         "id" to id,
                         "count" to count.toString(),
                     ),
-                )
+                ),
             ).parseAs<GetSimilarSongsDto>().subsonicResponse
+            if (tracksData.status != "ok") {
+                throwOnError(tracksData.error)
+            }
 
             return tracksData.similarSongs2?.song?.map { it.toTrack() } ?: listOf()
         }
