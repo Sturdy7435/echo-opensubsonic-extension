@@ -14,6 +14,7 @@ import dev.brahmkshatriya.echo.extension.dto.endpoints.GetSongsByGenreDto
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.parseAs
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.runRequest
+import dev.brahmkshatriya.echo.extension.service.request.RequestService.throwOnError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -25,8 +26,11 @@ object GenreService {
             authenticatedRequest(
                 endpoint = "getGenres",
                 parameters = mapOf(),
-            )
+            ),
         ).parseAs<GetGenresDto>().subsonicResponse
+        if (genresData.status != "ok") {
+            throwOnError(genresData.error)
+        }
 
         return genresData.genres?.genre?.map { it.value } ?: listOf()
     }
@@ -38,10 +42,13 @@ object GenreService {
                 parameters = mapOf(
                     "genre" to genre,
                     "count" to count.toString(),
-                    "offset" to offset.toString()
+                    "offset" to offset.toString(),
                 ),
-            )
+            ),
         ).parseAs<GetSongsByGenreDto>().subsonicResponse
+        if (tracksData.status != "ok") {
+            throwOnError(tracksData.error)
+        }
 
         return tracksData.songsByGenre?.song?.map { it.toTrack() } ?: listOf()
     }
@@ -54,10 +61,13 @@ object GenreService {
                     "type" to "byGenre",
                     "genre" to genre,
                     "size" to count.toString(),
-                    "offset" to offset.toString()
+                    "offset" to offset.toString(),
                 ),
-            )
+            ),
         ).parseAs<GetAlbumListDto>().subsonicResponse
+        if (albumsData.status != "ok") {
+            throwOnError(albumsData.error)
+        }
 
         return albumsData.albumList2?.album?.map { it.toAlbum() } ?: listOf()
     }
