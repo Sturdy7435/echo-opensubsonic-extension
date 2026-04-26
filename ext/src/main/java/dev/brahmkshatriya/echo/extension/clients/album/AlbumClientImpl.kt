@@ -12,6 +12,7 @@ import dev.brahmkshatriya.echo.extension.dto.endpoints.GetArtistDto
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.parseAs
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.runRequest
+import dev.brahmkshatriya.echo.extension.service.request.RequestService.throwOnError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -23,10 +24,13 @@ class AlbumClientImpl : AlbumClient {
             authenticatedRequest(
                 endpoint = "getAlbum",
                 parameters = mapOf(
-                    "id" to album.id
+                    "id" to album.id,
                 ),
-            )
+            ),
         ).parseAs<GetAlbumDto>().subsonicResponse
+        if (albumData.status != "ok") {
+            throwOnError(albumData.error)
+        }
 
         return albumData.album!!.toAlbum()
     }
@@ -36,10 +40,13 @@ class AlbumClientImpl : AlbumClient {
             authenticatedRequest(
                 endpoint = "getAlbum",
                 parameters = mapOf(
-                    "id" to album.id
+                    "id" to album.id,
                 ),
-            )
+            ),
         ).parseAs<GetAlbumDto>().subsonicResponse
+        if (albumData.status != "ok") {
+            throwOnError(albumData.error)
+        }
 
         return albumData.album!!.song?.map { it.toTrack() }?.toFeed()
     }
@@ -50,11 +57,14 @@ class AlbumClientImpl : AlbumClient {
             authenticatedRequest(
                 endpoint = "getArtist",
                 parameters = mapOf(
-                    "id" to artist.id
+                    "id" to artist.id,
                 ),
-            )
-        ).parseAs<GetArtistDto>().subsonicResponse.artist?.album
-        val otherAlbums: List<Album> = otherAlbumsData?.map { it.toAlbum() } ?: listOf()
+            ),
+        ).parseAs<GetArtistDto>().subsonicResponse
+        if (otherAlbumsData.status != "ok") {
+            throwOnError(otherAlbumsData.error)
+        }
+        val otherAlbums: List<Album> = otherAlbumsData.artist?.album?.map { it.toAlbum() } ?: listOf()
 
         return withContext(Dispatchers.IO) {
             listOf(
@@ -78,10 +88,13 @@ class AlbumClientImpl : AlbumClient {
                     parameters = mapOf(
                         "type" to type.id,
                         "size" to count.toString(),
-                        "offset" to offset.toString()
+                        "offset" to offset.toString(),
                     ),
-                )
+                ),
             ).parseAs<GetAlbumListDto>().subsonicResponse
+            if (albumListData.status != "ok") {
+                throwOnError(albumListData.error)
+            }
 
             return albumListData.albumList2?.album?.map { it.toAlbum() } ?: listOf()
         }
