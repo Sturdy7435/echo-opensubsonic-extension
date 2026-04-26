@@ -13,6 +13,7 @@ import dev.brahmkshatriya.echo.extension.dto.endpoints.GetTopSongsDto
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.parseAs
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.runRequest
+import dev.brahmkshatriya.echo.extension.service.request.RequestService.throwOnError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -24,19 +25,25 @@ class ArtistClientImpl : ArtistClient {
             authenticatedRequest(
                 endpoint = "getArtist",
                 parameters = mapOf(
-                    "id" to artist.id
+                    "id" to artist.id,
                 ),
-            )
+            ),
         ).parseAs<GetArtistDto>().subsonicResponse
+        if (artistData.status != "ok") {
+            throwOnError(artistData.error)
+        }
 
         val extraData = runRequest(
             authenticatedRequest(
                 endpoint = "getArtistInfo2",
                 parameters = mapOf(
-                    "id" to artist.id
+                    "id" to artist.id,
                 ),
-            )
+            ),
         ).parseAs<GetArtistInfoDto>().subsonicResponse
+        if (extraData.status != "ok") {
+            throwOnError(extraData.error)
+        }
 
         return artistData.artist!!.toArtist().copy(
             bio = extraData.biography,
@@ -51,9 +58,13 @@ class ArtistClientImpl : ArtistClient {
                     "artist" to artist.name,
                     "count" to "50",
                 ),
-            )
-        ).parseAs<GetTopSongsDto>().subsonicResponse.topSongs
-        val topMore = topData?.song?.map { it.toTrack() } ?: listOf()
+            ),
+        ).parseAs<GetTopSongsDto>().subsonicResponse
+        if (topData.status != "ok") {
+            throwOnError(topData.error)
+        }
+
+        val topMore = topData.topSongs?.song?.map { it.toTrack() } ?: listOf()
         val topSize = 9.coerceAtMost(topMore.size - 1)
         val top = topMore.slice(0..topSize)
 
@@ -61,21 +72,27 @@ class ArtistClientImpl : ArtistClient {
             authenticatedRequest(
                 endpoint = "getArtist",
                 parameters = mapOf(
-                    "id" to artist.id
+                    "id" to artist.id,
                 ),
-            )
-        ).parseAs<GetArtistDto>().subsonicResponse.artist?.album
-        val albums: List<Album> = albumsData?.map { it.toAlbum() } ?: listOf()
+            ),
+        ).parseAs<GetArtistDto>().subsonicResponse
+        if (albumsData.status != "ok") {
+            throwOnError(albumsData.error)
+        }
+        val albums: List<Album> = albumsData.artist?.album?.map { it.toAlbum() } ?: listOf()
 
         val similarData = runRequest(
             authenticatedRequest(
                 endpoint = "getArtistInfo2",
                 parameters = mapOf(
-                    "id" to artist.id
+                    "id" to artist.id,
                 ),
-            )
-        ).parseAs<GetArtistInfoDto>().subsonicResponse.similarArtist
-        val similar: List<Artist> = similarData?.map { it.toArtist() } ?: listOf()
+            ),
+        ).parseAs<GetArtistInfoDto>().subsonicResponse
+        if (similarData.status != "ok") {
+            throwOnError(similarData.error)
+        }
+        val similar: List<Artist> = similarData.similarArtist?.map { it.toArtist() } ?: listOf()
 
         return withContext(Dispatchers.IO) {
             listOf(
@@ -101,7 +118,7 @@ class ArtistClientImpl : ArtistClient {
                         id = "similar",
                         title = "Similar artists",
                         list = similar,
-                        type = Shelf.Lists.Type.Linear
+                        type = Shelf.Lists.Type.Linear,
                     )
                 },
             ).awaitAll()
@@ -114,11 +131,14 @@ class ArtistClientImpl : ArtistClient {
                 authenticatedRequest(
                     endpoint = "getArtists",
                     parameters = mapOf(),
-                )
+                ),
             ).parseAs<GetArtistsDto>().subsonicResponse
+            if (artistsData.status != "ok") {
+                throwOnError(artistsData.error)
+            }
 
-            /// Create a List<Artist> from the artists inside each `artist` field of the elements of
-            /// `index`
+            // Create a List<Artist> from the artists inside each `artist` field of the elements of
+            // `index`
             return artistsData.artists?.index
                 ?.flatMap { it.artist.orEmpty() }
                 ?.map { it.toArtist() }
