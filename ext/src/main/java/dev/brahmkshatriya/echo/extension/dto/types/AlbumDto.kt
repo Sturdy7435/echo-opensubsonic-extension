@@ -46,6 +46,7 @@ data class AlbumDto(
                     request = authenticatedRequest(
                         endpoint = "getCoverArt",
                         parameters = mapOf("id" to it),
+                        needsGet = true,
                     ).toNetworkRequest(),
                     crop = false,
                 )

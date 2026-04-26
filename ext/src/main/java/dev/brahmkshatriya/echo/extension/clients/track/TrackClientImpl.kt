@@ -40,6 +40,7 @@ class TrackClientImpl : TrackClient {
                             parameters = mapOf(
                                 "id" to streamable.id,
                             ),
+                            needsGet = true,
                         ).toNetworkRequest(),
                         type = Streamable.SourceType.Progressive,
                         quality = streamable.quality,
@@ -58,6 +59,7 @@ class TrackClientImpl : TrackClient {
                         parameters = mapOf(
                             "id" to streamable.id,
                         ),
+                        needsGet = true,
                     ).toNetworkRequest(),
                     type = Streamable.SourceType.Progressive,
                     quality = streamable.quality,
