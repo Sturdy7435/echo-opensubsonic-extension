@@ -13,7 +13,7 @@ object SettingsSession {
         SettingSwitch(
             title = "Force GET requests",
             key = "force_get_requests",
-            summary = "Whether to force usage of GET requests even if POST is supported, may expose authentication data in server logs",
+            summary = "Whether to force usage of GET requests even if POST is supported, may be useful for debugging",
             defaultValue = forceGetRequests,
         ),
     )
