@@ -14,6 +14,7 @@ data class ArtistDto(
 
     val albumCount: Int? = null,
     val album: List<AlbumDto>? = null,
+    val starred: String? = null,
 ) {
     fun toArtist(): Artist {
         return Artist(
@@ -29,6 +30,7 @@ data class ArtistDto(
                     crop = false,
                 )
             },
+            isFollowable = true,
         )
     }
 }

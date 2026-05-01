@@ -29,6 +29,7 @@ data class SongDto(
     val isrc: List<String>? = null,
     val coverArt: String? = null,
     val contentType: String? = null,
+    val starred: String? = null,
 ) {
     @Serializable
     data class ItemGenre(
@@ -70,6 +71,7 @@ data class SongDto(
                     title = "${bitRate ?: 0}kbps",
                 ),
             ),
+            isLikeable = true,
         )
     }
 }

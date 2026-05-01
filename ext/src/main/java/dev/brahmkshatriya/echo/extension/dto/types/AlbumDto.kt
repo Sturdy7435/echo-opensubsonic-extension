@@ -22,6 +22,7 @@ data class AlbumDto(
     val recordLabels: List<RecordLabelDto>? = null,
     val explicitStatus: String? = null,
     val version: String? = null,
+    val starred: String? = null,
 
     val song: List<SongDto>? = null,
 ) {
@@ -62,6 +63,7 @@ data class AlbumDto(
             label = recordLabels?.joinToString(", ") { it.name },
             isExplicit = explicitStatus.equals("explicit"),
             subtitle = version,
+            isLikeable = true,
         )
     }
 }
