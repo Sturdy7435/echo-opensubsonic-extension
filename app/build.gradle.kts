@@ -82,7 +82,7 @@ android {
     }
 
     buildTypes {
-        all {
+        release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
