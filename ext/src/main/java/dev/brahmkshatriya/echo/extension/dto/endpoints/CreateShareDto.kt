@@ -6,7 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CreateShareDto (
+data class CreateShareDto(
     @SerialName("subsonic-response")
     val subsonicResponse: SubsonicResponseDto,
 ) {
@@ -18,8 +18,8 @@ data class CreateShareDto (
         val shares: SharesDto? = null,
     ) {
         @Serializable
-        data class SharesDto (
-            val share: List<ShareDto>? = null
+        data class SharesDto(
+            val share: List<ShareDto>? = null,
         )
     }
 }

@@ -64,7 +64,8 @@ class AlbumClientImpl : AlbumClient {
         if (otherAlbumsData.status != "ok") {
             throwOnError(otherAlbumsData.error)
         }
-        val otherAlbums: List<Album> = otherAlbumsData.artist?.album?.map { it.toAlbum() } ?: listOf()
+        val otherAlbums: List<Album> =
+            otherAlbumsData.artist?.album?.map { it.toAlbum() } ?: listOf()
 
         return withContext(Dispatchers.IO) {
             listOf(
