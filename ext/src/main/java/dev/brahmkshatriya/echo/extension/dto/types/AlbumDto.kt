@@ -64,6 +64,7 @@ data class AlbumDto(
             isExplicit = explicitStatus.equals("explicit"),
             subtitle = version,
             isLikeable = true,
+            isShareable = true,
         )
     }
 }

@@ -72,6 +72,7 @@ data class SongDto(
                 ),
             ),
             isLikeable = true,
+            isShareable = true,
         )
     }
 }

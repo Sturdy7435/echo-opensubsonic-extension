@@ -31,6 +31,7 @@ data class ArtistDto(
                 )
             },
             isFollowable = true,
+            isShareable = false,
         )
     }
 }
