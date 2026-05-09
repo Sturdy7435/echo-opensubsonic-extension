@@ -19,7 +19,7 @@ data class GetTopSongsDto(
     ) {
         @Serializable
         data class TopSongsDto(
-            val song: List<SongDto>,
+            val song: List<SongDto>? = null,
         )
     }
 }
