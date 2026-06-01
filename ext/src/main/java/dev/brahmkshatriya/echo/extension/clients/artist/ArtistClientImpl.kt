@@ -10,13 +10,13 @@ import dev.brahmkshatriya.echo.extension.dto.endpoints.GetArtistDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetArtistInfoDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetArtistsDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetTopSongsDto
+import dev.brahmkshatriya.echo.extension.service.feed.FeedUtils.nonEmptyShelvesToFeed
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.parseAs
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.runRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.throwOnError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 
 class ArtistClientImpl : ArtistClient {
@@ -94,35 +94,37 @@ class ArtistClientImpl : ArtistClient {
         }
         val similar: List<Artist> = similarData.similarArtist?.map { it.toArtist() } ?: listOf()
 
-        return withContext(Dispatchers.IO) {
-            listOf(
-                async {
-                    Shelf.Lists.Tracks(
-                        id = "top",
-                        title = "Top songs",
-                        list = top,
-                        more = topMore.map { it.toShelf() }.toFeed(),
-                        type = Shelf.Lists.Type.Grid,
-                    )
-                },
-                async {
-                    Shelf.Lists.Items(
-                        id = "albums",
-                        title = "Albums",
-                        list = albums,
-                        type = Shelf.Lists.Type.Linear,
-                    )
-                },
-                async {
-                    Shelf.Lists.Items(
-                        id = "similar",
-                        title = "Similar artists",
-                        list = similar,
-                        type = Shelf.Lists.Type.Linear,
-                    )
-                },
-            ).awaitAll()
-        }.toFeed()
+        return nonEmptyShelvesToFeed(
+            withContext(Dispatchers.IO) {
+                listOf(
+                    async {
+                        Shelf.Lists.Tracks(
+                            id = "top",
+                            title = "Top songs",
+                            list = top,
+                            more = topMore.map { it.toShelf() }.toFeed(),
+                            type = Shelf.Lists.Type.Grid,
+                        )
+                    },
+                    async {
+                        Shelf.Lists.Items(
+                            id = "albums",
+                            title = "Albums",
+                            list = albums,
+                            type = Shelf.Lists.Type.Linear,
+                        )
+                    },
+                    async {
+                        Shelf.Lists.Items(
+                            id = "similar",
+                            title = "Similar artists",
+                            list = similar,
+                            type = Shelf.Lists.Type.Linear,
+                        )
+                    },
+                )
+            },
+        )
     }
 
     companion object {
