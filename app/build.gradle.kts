@@ -17,19 +17,19 @@ kotlin {
     jvmToolchain(17)
 }
 
-val extType: String by project
-val extId: String by project
-val extClass: String by project
+val extType = project.property("extType")
+val extId = project.property("extId")
+val extClass = project.property("extClass")
 
-val extIconUrl: String? by project
-val extName: String by project
-val extDescription: String? by project
+val extIconUrl = project.property("extIconUrl")
+val extName = project.property("extName")
+val extDescription = project.property("extDescription")
 
-val extAuthor: String by project
-val extAuthorUrl: String? by project
+val extAuthor = project.property("extAuthor")
+val extAuthorUrl = project.property("extAuthorUrl")
 
-val extRepoUrl: String? by project
-val extUpdateUrl: String? by project
+val extRepoUrl = project.property("extRepoUrl")
+val extUpdateUrl = project.property("extUpdateUrl")
 
 val gitHash = execute("git", "rev-parse", "HEAD").take(7)
 val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
@@ -41,6 +41,7 @@ val outputDir = file("${layout.buildDirectory.asFile.get()}/generated/proguard")
 val generatedProguard = file("${outputDir}/generated-rules.pro")
 
 tasks.register("generateProguardRules") {
+    description = "Generate the Proguard rules"
     doLast {
         outputDir.mkdirs()
         generatedProguard.writeText(
@@ -66,15 +67,15 @@ android {
 
         manifestPlaceholders.apply {
             put("type", "dev.brahmkshatriya.echo.${extType}")
-            put("id", extId)
+            put("id", extId!!)
             put("class_path", "dev.brahmkshatriya.echo.extension.${extClass}")
             put("version", verName)
             put("version_code", verCode.toString())
             put("icon_url", extIconUrl ?: "")
             put("app_name", "Echo : $extName Extension")
-            put("name", extName)
+            put("name", extName!!)
             put("description", extDescription ?: "")
-            put("author", extAuthor)
+            put("author", extAuthor!!)
             put("author_url", extAuthorUrl ?: "")
             put("repo_url", extRepoUrl ?: "")
             put("update_url", extUpdateUrl ?: "")

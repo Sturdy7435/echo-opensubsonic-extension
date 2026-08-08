@@ -18,7 +18,7 @@ dependencyResolutionManagement {
     }
 }
 
-val extName: String by settings
+val extName = providers.gradleProperty("extName").get()
 rootProject.name = extName
 include(":app")
 include(":ext")

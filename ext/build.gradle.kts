@@ -14,7 +14,6 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
-    //testImplementation(libs.echo.common)
     implementation(libs.kotlinx.coroutines.core)
 }
 
@@ -29,19 +28,19 @@ kotlin {
 
 // Extension properties goto `gradle.properties` to set values
 
-val extType: String by project
-val extId: String by project
-val extClass: String by project
+val extType = project.property("extType")
+val extId = project.property("extId")
+val extClass = project.property("extClass")
 
-val extIconUrl: String? by project
-val extName: String by project
-val extDescription: String? by project
+val extIconUrl = project.property("extIconUrl")
+val extName = project.property("extName")
+val extDescription = project.property("extDescription")
 
-val extAuthor: String by project
-val extAuthorUrl: String? by project
+val extAuthor = project.property("extAuthor")
+val extAuthorUrl = project.property("extAuthorUrl")
 
-val extRepoUrl: String? by project
-val extUpdateUrl: String? by project
+val extRepoUrl = project.property("extRepoUrl")
+val extUpdateUrl = project.property("extUpdateUrl")
 
 val gitHash = execute("git", "rev-parse", "HEAD").take(7)
 val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
@@ -52,7 +51,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             groupId = "dev.brahmkshatriya.echo.extension"
-            artifactId = extId
+            artifactId = extId.toString()
             version = verName
 
             from(components["java"])
@@ -62,7 +61,7 @@ publishing {
 
 tasks {
     shadowJar {
-        archiveBaseName.set(extId)
+        archiveBaseName.set(extId.toString())
         archiveVersion.set(verName)
         manifest {
             attributes(
@@ -93,7 +92,7 @@ fun execute(vararg command: String): String = providers.exec {
     commandLine(*command)
 }.standardOutput.asText.get().trim()
 
-val compileKotlin: KotlinCompile by tasks
+val compileKotlin = tasks.named<KotlinCompile>("compileKotlin").get()
 compileKotlin.compilerOptions {
     freeCompilerArgs.set(listOf("-Xcontext-parameters"))
 }
