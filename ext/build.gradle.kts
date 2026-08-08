@@ -14,7 +14,8 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
-    testImplementation(libs.echo.common)
+    //testImplementation(libs.echo.common)
+    implementation(libs.kotlinx.coroutines.core)
 }
 
 java {
@@ -81,8 +82,8 @@ tasks {
                     "Extension-Author-Url" to extAuthorUrl,
 
                     "Extension-Repo-Url" to extRepoUrl,
-                    "Extension-Update-Url" to extUpdateUrl
-                )
+                    "Extension-Update-Url" to extUpdateUrl,
+                ),
             )
         }
     }

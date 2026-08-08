@@ -12,8 +12,6 @@ import dev.brahmkshatriya.echo.extension.clients.album.AlbumClientImpl.Companion
 import dev.brahmkshatriya.echo.extension.clients.album.AlbumClientImpl.Companion.getAlbumList
 import dev.brahmkshatriya.echo.extension.clients.artist.ArtistClientImpl.Companion.getArtists
 import dev.brahmkshatriya.echo.extension.clients.track.TrackClientImpl.Companion.getRandomTracks
-import dev.brahmkshatriya.echo.extension.service.genre.GenreService.createGenreFeed
-import dev.brahmkshatriya.echo.extension.service.genre.GenreService.getGenres
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -66,6 +64,7 @@ class HomeFeedClientImpl : HomeFeedClient {
                         type = Shelf.Lists.Type.Linear,
                     )
                 },
+                /*
                 async {
                     // FIXME: too many requests during reload but it works
 
@@ -93,6 +92,7 @@ class HomeFeedClientImpl : HomeFeedClient {
                         type = Shelf.Lists.Type.Grid,
                     )
                 },
+                 */
             ).awaitAll()
         }.toFeed()
     }

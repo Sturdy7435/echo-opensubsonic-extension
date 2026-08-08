@@ -19,7 +19,7 @@ data class GetSimilarSongsDto(
     ) {
         @Serializable
         data class SimilarSongsDto(
-            val song: List<SongDto>,
+            val song: List<SongDto>? = null,
         )
     }
 }
