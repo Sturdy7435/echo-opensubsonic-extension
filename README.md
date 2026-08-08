@@ -1,6 +1,6 @@
 # OpenSubsonic Extension for Echo
 
-This is an extension for the extension based music player [Echo](https://github.com/brahmkshatriya/echo). It implements support for the OpenSubsonic API, an improvement over the Subsonic API.<br>
+This is an extension for the extension-based music player [Echo](https://github.com/brahmkshatriya/echo). It implements support for the OpenSubsonic API, an improvement over the Subsonic API.<br>
 This allows the streaming of music from all Subsonic and OpenSubsonic music servers, including Navidrome.
 
 ## Installation
@@ -15,7 +15,7 @@ This allows the streaming of music from all Subsonic and OpenSubsonic music serv
 ### Manual download
 1. **Download the Extension**:
    - Visit the [latest release page](https://github.com/Sturdy7435/echo-opensubsonic-extension/releases/latest).
-   - Download the latest `.eapk` file of the Deezer Extension.
+   - Download the latest `.eapk` file of the OpenSubsonic extension.
 
 2. **Install the Extension**:
    - Open the downloaded `.eapk` file.
