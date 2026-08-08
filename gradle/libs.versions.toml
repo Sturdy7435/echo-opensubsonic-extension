@@ -3,12 +3,14 @@ echoCommon = "1.0.0"
 kotlin = "2.3.21"
 agp = "9.2.0"
 gradleShadow = "9.4.1"
+kotlinxCoroutinesCore = "1.11.0"
 
 [libraries]
 echo-common = { module = "dev.brahmkshatriya.echo:common", version.ref = "echoCommon" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 junit = { module = "junit:junit", version = "4.13.2" }
-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.10.2" }
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesCore" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
