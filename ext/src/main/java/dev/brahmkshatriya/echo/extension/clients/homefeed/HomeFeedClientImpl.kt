@@ -1,9 +1,16 @@
 package dev.brahmkshatriya.echo.extension.clients.homefeed
 
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
+import dev.brahmkshatriya.echo.common.helpers.Page
+import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Album
+import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeed
 import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.extension.clients.album.AlbumClientImpl.Companion.AlbumListType
+import dev.brahmkshatriya.echo.extension.clients.album.AlbumClientImpl.Companion.getAlbumList
+import dev.brahmkshatriya.echo.extension.clients.artist.ArtistClientImpl.Companion.getArtists
 import dev.brahmkshatriya.echo.extension.clients.track.TrackClientImpl.Companion.getRandomTracks
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -22,7 +29,6 @@ class HomeFeedClientImpl : HomeFeedClient {
                         type = Shelf.Lists.Type.Linear,
                     )
                 },
-                /*
                 async {
                     val albumList: List<Album> = getAlbumList(AlbumListType.Random, 10)
                     val pageSize = 20
@@ -58,6 +64,7 @@ class HomeFeedClientImpl : HomeFeedClient {
                         type = Shelf.Lists.Type.Linear,
                     )
                 },
+                /*
                 async {
                     // FIXME: too many requests during reload but it works
 
