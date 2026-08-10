@@ -7,6 +7,7 @@ import dev.brahmkshatriya.echo.common.clients.FollowClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
 import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
+import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.extension.clients.album.AlbumClientImpl
@@ -16,6 +17,7 @@ import dev.brahmkshatriya.echo.extension.clients.follow.FollowClientImpl
 import dev.brahmkshatriya.echo.extension.clients.homefeed.HomeFeedClientImpl
 import dev.brahmkshatriya.echo.extension.clients.like.LikeClientImpl
 import dev.brahmkshatriya.echo.extension.clients.login.LoginClientImpl
+import dev.brahmkshatriya.echo.extension.clients.searchfeed.SearchFeedClientImpl
 import dev.brahmkshatriya.echo.extension.clients.share.ShareClientImpl
 import dev.brahmkshatriya.echo.extension.clients.track.TrackClientImpl
 
@@ -24,6 +26,7 @@ class OpenSubsonicExtension :
     LoginClient.CustomInput by LoginClientImpl(),
 
     HomeFeedClient by HomeFeedClientImpl(),
+    SearchFeedClient by SearchFeedClientImpl(),
 
     AlbumClient by AlbumClientImpl(),
     ArtistClient by ArtistClientImpl(),
