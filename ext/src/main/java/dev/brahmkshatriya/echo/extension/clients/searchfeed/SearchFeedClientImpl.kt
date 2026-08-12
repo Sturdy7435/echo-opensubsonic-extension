@@ -1,10 +1,14 @@
 package dev.brahmkshatriya.echo.extension.clients.searchfeed
 
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
-import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.helpers.PagedData
+import dev.brahmkshatriya.echo.common.models.Album
+import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.Feed
-import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeed
+import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeedData
 import dev.brahmkshatriya.echo.common.models.Shelf
+import dev.brahmkshatriya.echo.common.models.Tab
+import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extension.dto.endpoints.SearchDto
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.parseAs
@@ -13,22 +17,24 @@ import dev.brahmkshatriya.echo.extension.service.request.RequestService.throwOnE
 
 class SearchFeedClientImpl : SearchFeedClient {
     override suspend fun loadSearchFeed(query: String): Feed<Shelf> {
-        /*return Feed(
-            listOf("Tracks", "Albums", "Artists").map { Tab(it, it) }
-        ) { tab ->
-            val pagedData: PagedData.Single<EchoMediaItem> = when (tab?.id) {
-                "Tracks" -> TODO()
-                "Albums" -> TODO()
-                "Artists" -> TODO()
-                else -> throw IllegalArgumentException("Unknown tab")
-            }
 
-        }*/
-        return if (query.isBlank()) {
+        val data: SearchResult = if (query.isBlank()) {
             search("", -1, -1, -1)
         } else {
             search(query, 20, 20, 20)
-        }.map { it.toShelf() }.toFeed()
+        }
+
+        return Feed(
+            listOf("Tracks", "Albums", "Artists").map { Tab(it, it) },
+        ) { tab ->
+            val pagedData: PagedData.Single<Shelf> = when (tab?.id) {
+                "Tracks" -> PagedData.Single { data.tracks?.map { it.toShelf() as Shelf } ?: listOf() }
+                "Albums" -> PagedData.Single { data.albums?.map { it.toShelf() as Shelf } ?: listOf() }
+                "Artists" -> PagedData.Single { data.artists?.map { it.toShelf() as Shelf } ?: listOf() }
+                else -> throw IllegalArgumentException("Unknown tab")
+            }
+            pagedData.toFeedData()
+        }
     }
 
     suspend fun search(
@@ -36,7 +42,7 @@ class SearchFeedClientImpl : SearchFeedClient {
         trackCount: Int,
         albumCount: Int,
         artistCount: Int,
-    ): List<EchoMediaItem> {
+    ): SearchResult {
         val searchData = runRequest(
             authenticatedRequest(
                 endpoint = "search3",
@@ -52,10 +58,16 @@ class SearchFeedClientImpl : SearchFeedClient {
             throwOnError(searchData.error)
         }
 
-        return listOf(
-            searchData.searchResult3?.song?.map { it.toTrack() } ?: listOf(),
-            searchData.searchResult3?.album?.map { it.toAlbum() } ?: listOf(),
-            searchData.searchResult3?.artist?.map { it.toArtist() } ?: listOf(),
-        ).flatten()
+        return SearchResult(
+            tracks = searchData.searchResult3?.song?.map { it.toTrack() },
+            albums = searchData.searchResult3?.album?.map { it.toAlbum() },
+            artists = searchData.searchResult3?.artist?.map { it.toArtist() },
+        )
     }
+
+    data class SearchResult(
+        val tracks: List<Track>?,
+        val albums: List<Album>?,
+        val artists: List<Artist>?,
+    )
 }
