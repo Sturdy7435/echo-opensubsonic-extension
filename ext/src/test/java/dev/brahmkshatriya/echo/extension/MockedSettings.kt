@@ -18,5 +18,4 @@ class MockedSettings : Settings {
     override fun putString(key: String, value: String?) {}
 
     override fun putStringSet(key: String, value: Set<String>?) {}
-
 }

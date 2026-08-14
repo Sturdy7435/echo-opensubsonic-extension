@@ -29,11 +29,14 @@ import kotlin.system.measureTimeMillis
 @ExperimentalCoroutinesApi
 class ExtensionUnitTest {
     private val extension: ExtensionClient = OpenSubsonicExtension()
-    private val searchQuery = "Skrillex"
-    private val user = User("", "demo", extras = mapOf(
-        "serverUrl" to "https://demo.navidrome.org",
-        "password" to "demo",
-    ))
+    private val searchQuery = "The Polish Ambassador"
+    private val user = User(
+        "", "demo",
+        extras = mapOf(
+            "serverUrl" to "https://demo.navidrome.org",
+            "password" to "demo",
+        ),
+    )
 
     @Test
     fun testEmptySearch() = testIn("Testing Empty Search") {

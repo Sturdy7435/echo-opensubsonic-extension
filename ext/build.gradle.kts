@@ -10,11 +10,14 @@ plugins {
 
 dependencies {
     compileOnly(libs.echo.common)
+    testImplementation(libs.echo.common)
+
     compileOnly(libs.kotlin.stdlib)
+
+    implementation(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
-    implementation(libs.kotlinx.coroutines.core)
 }
 
 java {
