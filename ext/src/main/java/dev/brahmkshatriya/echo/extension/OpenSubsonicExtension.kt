@@ -9,6 +9,7 @@ import dev.brahmkshatriya.echo.common.clients.LibraryFeedClient
 import dev.brahmkshatriya.echo.common.clients.LikeClient
 import dev.brahmkshatriya.echo.common.clients.LoginClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistClient
+import dev.brahmkshatriya.echo.common.clients.RadioClient
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
@@ -21,6 +22,7 @@ import dev.brahmkshatriya.echo.extension.clients.libraryfeed.LibraryFeedClientIm
 import dev.brahmkshatriya.echo.extension.clients.like.LikeClientImpl
 import dev.brahmkshatriya.echo.extension.clients.login.LoginClientImpl
 import dev.brahmkshatriya.echo.extension.clients.playlist.PlaylistClientImpl
+import dev.brahmkshatriya.echo.extension.clients.radio.RadioClientImpl
 import dev.brahmkshatriya.echo.extension.clients.searchfeed.SearchFeedClientImpl
 import dev.brahmkshatriya.echo.extension.clients.share.ShareClientImpl
 import dev.brahmkshatriya.echo.extension.clients.track.TrackClientImpl
@@ -37,7 +39,7 @@ class OpenSubsonicExtension :
     AlbumClient by AlbumClientImpl(),
     PlaylistClient by PlaylistClientImpl(),
     ArtistClient by ArtistClientImpl(),
-    // RadioClient by RadioClientImpl(),
+    RadioClient by RadioClientImpl(),
 
     FollowClient by FollowClientImpl(),
     LikeClient by LikeClientImpl(),

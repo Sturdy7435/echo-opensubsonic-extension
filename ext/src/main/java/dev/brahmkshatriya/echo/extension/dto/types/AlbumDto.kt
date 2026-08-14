@@ -63,6 +63,7 @@ data class AlbumDto(
             label = recordLabels?.joinToString(", ") { it.name },
             isExplicit = explicitStatus.equals("explicit"),
             subtitle = version,
+            isRadioSupported = true,
             isLikeable = true,
             isShareable = true,
         )

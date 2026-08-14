@@ -71,6 +71,7 @@ data class SongDto(
                     title = "${bitRate ?: 0}kbps",
                 ),
             ),
+            isRadioSupported = true,
             isLikeable = true,
             isShareable = true,
         )

@@ -30,6 +30,7 @@ data class ArtistDto(
                     crop = false,
                 )
             },
+            isRadioSupported = true,
             isFollowable = true,
             isShareable = false,
         )
