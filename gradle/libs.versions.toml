@@ -4,8 +4,10 @@ kotlin = "2.4.10"
 agp = "9.3.1"
 gradleShadow = "9.6.1"
 kotlinxCoroutinesCore = "1.11.0"
+desugar_jdk_libs = "2.1.5"
 
 [libraries]
+desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 echo-common = { module = "dev.brahmkshatriya.echo:common", version.ref = "echoCommon" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 junit = { module = "junit:junit", version = "4.13.2" }

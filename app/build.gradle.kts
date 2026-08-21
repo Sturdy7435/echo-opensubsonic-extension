@@ -6,6 +6,7 @@ dependencies {
     implementation(project(":ext"))
     compileOnly(libs.echo.common)
     compileOnly(libs.kotlin.stdlib)
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
 java {
@@ -60,6 +61,11 @@ tasks.named("preBuild") {
 android {
     namespace = "dev.brahmkshatriya.echo.extension"
     compileSdk = 37
+
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+    }
+
     defaultConfig {
         applicationId = "dev.brahmkshatriya.echo.extension.$extId"
         minSdk = 24
