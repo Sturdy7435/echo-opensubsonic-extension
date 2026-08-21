@@ -22,10 +22,10 @@ class ShareClientImpl : ShareClient {
         val shareData = runRequest(
             authenticatedRequest(
                 endpoint = "createShare",
-                parameters = mapOf(
+                parameters = listOf(
                     "id" to item.id,
                     "description" to item.title,
-                    "expires" to (Clock.System.now().toEpochMilliseconds() * 31_536_000_000L)
+                    "expires" to (Clock.System.now().toEpochMilliseconds() + 31_536_000_000L)
                         .toString(), // The share will last 365 days
                 ),
             ),

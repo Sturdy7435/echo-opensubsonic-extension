@@ -29,7 +29,7 @@ object RequestService {
     private const val API_VERSION: String = "1.16"
     private const val CLIENT_NAME: String = "Echo nightly"
     private const val RESPONSE_FORMAT: String = "json"
-    private val COMMON_PARAMETERS: Map<String, String> = mapOf(
+    private val COMMON_PARAMETERS: List<Pair<String, String>> = listOf(
         "v" to API_VERSION,
         "c" to CLIENT_NAME,
         "f" to RESPONSE_FORMAT,
@@ -62,13 +62,13 @@ object RequestService {
     }
 
     private fun appendAuthParameters(
-        parameters: Map<String, String> = mapOf(),
+        parameters: List<Pair<String, String>> = emptyList(),
         credentials: UserData = getCurrentUser(),
-    ): Map<String, String> {
+    ): List<Pair<String, String>> {
         checkAuth(credentials)
 
         credentials.apiKey?.let {
-            return parameters + mapOf(
+            return parameters + listOf(
                 "apiKey" to it,
             )
         }
@@ -76,7 +76,7 @@ object RequestService {
         credentials.password!!.let {
             val salt = generateSalt()
             val token = generateToken(it, salt)
-            return parameters + mapOf(
+            return parameters + listOf(
                 "u" to credentials.username,
                 "t" to token,
                 "s" to salt,
@@ -89,7 +89,7 @@ object RequestService {
     fun get(
         baseUrl: String,
         endpoint: String,
-        parameters: Map<String, String> = mapOf(),
+        parameters: List<Pair<String, String>> = emptyList(),
     ): Request {
         return Request.Builder()
             .url(
@@ -97,7 +97,12 @@ object RequestService {
                     addPathSegment("rest")
                     addPathSegment(endpoint)
 
-                    (COMMON_PARAMETERS + parameters).forEach { addQueryParameter(it.key, it.value) }
+                    (COMMON_PARAMETERS + parameters).forEach {
+                        addQueryParameter(
+                            it.first,
+                            it.second,
+                        )
+                    }
                 }.build(),
             )
             .headers(DEFAULT_HEADERS)
@@ -108,7 +113,7 @@ object RequestService {
     fun post(
         baseUrl: String,
         endpoint: String,
-        parameters: Map<String, String> = mapOf(),
+        parameters: List<Pair<String, String>> = emptyList(),
     ): Request {
         return Request.Builder()
             .url(
@@ -119,7 +124,7 @@ object RequestService {
             )
             .post(
                 FormBody.Builder().apply {
-                    (COMMON_PARAMETERS + parameters).forEach { add(it.key, it.value) }
+                    (COMMON_PARAMETERS + parameters).forEach { add(it.first, it.second) }
                 }.build(),
             )
             .headers(DEFAULT_HEADERS)
@@ -129,11 +134,11 @@ object RequestService {
 
     fun authenticatedRequest(
         endpoint: String,
-        parameters: Map<String, String> = mapOf(),
+        parameters: List<Pair<String, String>> = emptyList(),
         needsGet: Boolean = false,
         credentials: UserData = getCurrentUser(),
     ): Request {
-        val params: Map<String, String> = appendAuthParameters(parameters, credentials)
+        val params: List<Pair<String, String>> = appendAuthParameters(parameters, credentials)
         val server: ServerData = credentials.server!!
         val supportsPost: Boolean =
             server.extensions?.contains(ServerData.Extension.FormPost) ?: false

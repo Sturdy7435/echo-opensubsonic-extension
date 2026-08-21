@@ -23,7 +23,7 @@ class AlbumClientImpl : AlbumClient {
         val albumData = runRequest(
             authenticatedRequest(
                 endpoint = "getAlbum",
-                parameters = mapOf(
+                parameters = listOf(
                     "id" to album.id,
                 ),
             ),
@@ -39,7 +39,7 @@ class AlbumClientImpl : AlbumClient {
         val albumData = runRequest(
             authenticatedRequest(
                 endpoint = "getAlbum",
-                parameters = mapOf(
+                parameters = listOf(
                     "id" to album.id,
                 ),
             ),
@@ -56,7 +56,7 @@ class AlbumClientImpl : AlbumClient {
         val otherAlbumsData = runRequest(
             authenticatedRequest(
                 endpoint = "getArtist",
-                parameters = mapOf(
+                parameters = listOf(
                     "id" to artist.id,
                 ),
             ),
@@ -86,7 +86,7 @@ class AlbumClientImpl : AlbumClient {
             val albumListData = runRequest(
                 authenticatedRequest(
                     endpoint = "getAlbumList2",
-                    parameters = mapOf(
+                    parameters = listOf(
                         "type" to type.id,
                         "size" to count.toString(),
                         "offset" to offset.toString(),

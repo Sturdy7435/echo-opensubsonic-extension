@@ -24,11 +24,11 @@ class LikeClientImpl : LikeClient {
             authenticatedRequest(
                 endpoint = if (shouldLike) "star" else "unstar",
                 parameters = if (item is Track) {
-                    mapOf(
+                    listOf(
                         "id" to item.id,
                     )
                 } else { // item is Album
-                    mapOf(
+                    listOf(
                         "albumId" to item.id,
                     )
                 },
@@ -42,7 +42,7 @@ class LikeClientImpl : LikeClient {
                 val trackData = runRequest(
                     authenticatedRequest(
                         endpoint = "getSong",
-                        parameters = mapOf(
+                        parameters = listOf(
                             "id" to item.id,
                         ),
                     ),
@@ -58,7 +58,7 @@ class LikeClientImpl : LikeClient {
                 val albumData = runRequest(
                     authenticatedRequest(
                         endpoint = "getAlbum",
-                        parameters = mapOf(
+                        parameters = listOf(
                             "id" to item.id,
                         ),
                     ),

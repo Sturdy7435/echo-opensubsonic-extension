@@ -46,7 +46,7 @@ class SearchFeedClientImpl : SearchFeedClient {
         val searchData = runRequest(
             authenticatedRequest(
                 endpoint = "search3",
-                parameters = mapOf(
+                parameters = listOf(
                     "query" to query,
                     "songCount" to trackCount.toString(),
                     "albumCount" to albumCount.toString(),

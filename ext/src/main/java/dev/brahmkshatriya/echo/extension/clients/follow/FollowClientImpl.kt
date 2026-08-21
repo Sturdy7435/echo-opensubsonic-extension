@@ -21,7 +21,7 @@ class FollowClientImpl : FollowClient {
         runRequest(
             authenticatedRequest(
                 endpoint = if (shouldFollow) "star" else "unstar",
-                parameters = mapOf(
+                parameters = listOf(
                     "artistId" to item.id,
                 ),
             ),
@@ -36,7 +36,7 @@ class FollowClientImpl : FollowClient {
         val artistData = runRequest(
             authenticatedRequest(
                 endpoint = "getArtist",
-                parameters = mapOf(
+                parameters = listOf(
                     "id" to item.id,
                 ),
             ),

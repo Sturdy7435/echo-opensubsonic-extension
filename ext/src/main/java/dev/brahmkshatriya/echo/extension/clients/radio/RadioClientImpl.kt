@@ -24,7 +24,7 @@ class RadioClientImpl: RadioClient {
         val radioData = runRequest(
             authenticatedRequest(
                 endpoint = "getSimilarSongs2",
-                parameters = mapOf(
+                parameters = listOf(
                     "id" to radio.artists[0].id,
                 ),
             ),

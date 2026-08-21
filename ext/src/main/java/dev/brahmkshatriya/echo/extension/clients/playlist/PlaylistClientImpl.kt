@@ -18,7 +18,7 @@ class PlaylistClientImpl : PlaylistClient {
         val playlistData = runRequest(
             authenticatedRequest(
                 endpoint = "getPlaylist",
-                parameters = mapOf(
+                parameters = listOf(
                     "id" to playlist.id,
                 ),
             ),
@@ -34,7 +34,7 @@ class PlaylistClientImpl : PlaylistClient {
         val playlistData = runRequest(
             authenticatedRequest(
                 endpoint = "getPlaylist",
-                parameters = mapOf(
+                parameters = listOf(
                     "id" to playlist.id,
                 ),
             ),
@@ -56,7 +56,7 @@ class PlaylistClientImpl : PlaylistClient {
             val playlistsData = runRequest(
                 authenticatedRequest(
                     endpoint = "getPlaylists",
-                    parameters = mapOf(),
+                    parameters = listOf(),
                 ),
             ).parseAs<GetPlaylistsDto>().subsonicResponse
             if (playlistsData.status != "ok") {

@@ -25,7 +25,7 @@ object GenreService {
         val genresData = runRequest(
             authenticatedRequest(
                 endpoint = "getGenres",
-                parameters = mapOf(),
+                parameters = listOf(),
             ),
         ).parseAs<GetGenresDto>().subsonicResponse
         if (genresData.status != "ok") {
@@ -39,7 +39,7 @@ object GenreService {
         val tracksData = runRequest(
             authenticatedRequest(
                 endpoint = "getSongsByGenre",
-                parameters = mapOf(
+                parameters = listOf(
                     "genre" to genre,
                     "count" to count.toString(),
                     "offset" to offset.toString(),
@@ -57,7 +57,7 @@ object GenreService {
         val albumsData = runRequest(
             authenticatedRequest(
                 endpoint = "getAlbumList2",
-                parameters = mapOf(
+                parameters = listOf(
                     "type" to "byGenre",
                     "genre" to genre,
                     "size" to count.toString(),

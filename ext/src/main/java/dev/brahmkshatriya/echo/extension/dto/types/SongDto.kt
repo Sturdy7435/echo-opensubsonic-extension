@@ -49,7 +49,7 @@ data class SongDto(
                 ImageHolder.NetworkRequestImageHolder(
                     request = authenticatedRequest(
                         endpoint = "getCoverArt",
-                        parameters = mapOf("id" to it),
+                        parameters = listOf("id" to it),
                         needsGet = true,
                     ).toNetworkRequest(),
                     crop = false,

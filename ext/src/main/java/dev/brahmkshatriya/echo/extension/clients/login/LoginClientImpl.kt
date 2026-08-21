@@ -186,7 +186,7 @@ class LoginClientImpl : LoginClient.CustomInput {
         val loginData = runRequest(
             authenticatedRequest(
                 endpoint = "getUser",
-                parameters = mapOf(
+                parameters = listOf(
                     "username" to tmp.username,
                 ),
                 credentials = tmp,
@@ -199,7 +199,7 @@ class LoginClientImpl : LoginClient.CustomInput {
         val avatar: ImageHolder = ImageHolder.NetworkRequestImageHolder(
             authenticatedRequest(
                 endpoint = "getAvatar",
-                parameters = mapOf(
+                parameters = listOf(
                     "username" to tmp.username,
                 ),
                 needsGet = true,
@@ -248,7 +248,7 @@ class LoginClientImpl : LoginClient.CustomInput {
         val loginData = runRequest(
             authenticatedRequest(
                 endpoint = "getUser",
-                parameters = mapOf(
+                parameters = listOf(
                     "username" to username,
                 ),
                 credentials = tmp,
@@ -261,7 +261,7 @@ class LoginClientImpl : LoginClient.CustomInput {
         val avatar = ImageHolder.NetworkRequestImageHolder(
             authenticatedRequest(
                 endpoint = "getAvatar",
-                parameters = mapOf(
+                parameters = listOf(
                     "username" to username,
                 ),
                 needsGet = true,

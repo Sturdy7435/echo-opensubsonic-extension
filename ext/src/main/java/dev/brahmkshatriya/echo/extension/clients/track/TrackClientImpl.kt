@@ -37,7 +37,7 @@ class TrackClientImpl : TrackClient {
                     Streamable.Source.Http(
                         request = authenticatedRequest(
                             endpoint = "download",
-                            parameters = mapOf(
+                            parameters = listOf(
                                 "id" to streamable.id,
                             ),
                             needsGet = true,
@@ -56,7 +56,7 @@ class TrackClientImpl : TrackClient {
                 Streamable.Source.Http(
                     request = authenticatedRequest(
                         endpoint = "stream",
-                        parameters = mapOf(
+                        parameters = listOf(
                             "id" to streamable.id,
                         ),
                         needsGet = true,
@@ -90,10 +90,10 @@ class TrackClientImpl : TrackClient {
             val songsData = runRequest(
                 authenticatedRequest(
                     endpoint = "getRandomSongs",
-                    parameters = mapOf(
+                    parameters = listOf(
                         "size" to count.toString(),
                         "genre" to genre,
-                    ).filterValues { it != null }.mapValues { it.value!! },
+                    ).filter { it.second != null }.map { it.first to it.second!! },
                 ),
             ).parseAs<GetRandomSongsDto>().subsonicResponse
             if (songsData.status != "ok") {
@@ -108,7 +108,7 @@ class TrackClientImpl : TrackClient {
             val tracksData = runRequest(
                 authenticatedRequest(
                     endpoint = "getSimilarSongs2",
-                    parameters = mapOf(
+                    parameters = listOf(
                         "id" to id,
                         "count" to count.toString(),
                     ),

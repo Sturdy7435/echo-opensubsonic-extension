@@ -24,7 +24,7 @@ class ArtistClientImpl : ArtistClient {
         val artistData = runRequest(
             authenticatedRequest(
                 endpoint = "getArtist",
-                parameters = mapOf(
+                parameters = listOf(
                     "id" to artist.id,
                 ),
             ),
@@ -36,7 +36,7 @@ class ArtistClientImpl : ArtistClient {
         val extraData = runRequest(
             authenticatedRequest(
                 endpoint = "getArtistInfo2",
-                parameters = mapOf(
+                parameters = listOf(
                     "id" to artist.id,
                 ),
             ),
@@ -54,7 +54,7 @@ class ArtistClientImpl : ArtistClient {
         val topData = runRequest(
             authenticatedRequest(
                 endpoint = "getTopSongs",
-                parameters = mapOf(
+                parameters = listOf(
                     "artist" to artist.name,
                     "count" to "50",
                 ),
@@ -71,7 +71,7 @@ class ArtistClientImpl : ArtistClient {
         val albumsData = runRequest(
             authenticatedRequest(
                 endpoint = "getArtist",
-                parameters = mapOf(
+                parameters = listOf(
                     "id" to artist.id,
                 ),
             ),
@@ -84,7 +84,7 @@ class ArtistClientImpl : ArtistClient {
         val similarData = runRequest(
             authenticatedRequest(
                 endpoint = "getArtistInfo2",
-                parameters = mapOf(
+                parameters = listOf(
                     "id" to artist.id,
                 ),
             ),
@@ -132,7 +132,7 @@ class ArtistClientImpl : ArtistClient {
             val artistsData = runRequest(
                 authenticatedRequest(
                     endpoint = "getArtists",
-                    parameters = mapOf(),
+                    parameters = listOf(),
                 ),
             ).parseAs<GetArtistsDto>().subsonicResponse
             if (artistsData.status != "ok") {
