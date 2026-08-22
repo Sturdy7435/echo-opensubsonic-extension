@@ -54,7 +54,7 @@ data class PlaylistDto(
             },
             description = comment,
             isRadioSupported = false,
-            isLikeable = true,
+            isLikeable = false,
             isShareable = true,
         )
     }
