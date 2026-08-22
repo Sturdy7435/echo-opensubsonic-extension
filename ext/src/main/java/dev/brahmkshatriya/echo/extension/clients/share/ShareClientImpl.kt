@@ -3,6 +3,7 @@ package dev.brahmkshatriya.echo.extension.clients.share
 import dev.brahmkshatriya.echo.common.clients.ShareClient
 import dev.brahmkshatriya.echo.common.models.Album
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
+import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extension.dto.endpoints.CreateShareDto
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
@@ -13,9 +14,9 @@ import kotlin.time.Clock
 
 class ShareClientImpl : ShareClient {
     override suspend fun onShare(item: EchoMediaItem): String {
-        if (item !is Track && item !is Album) {
+        if (item !is Track && item !is Album && item !is Playlist) {
             throw UnsupportedOperationException(
-                "OpenSubsonic servers can only share tracks and albums",
+                "OpenSubsonic servers can only share tracks, albums and playlists.",
             )
         }
 
