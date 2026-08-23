@@ -8,11 +8,12 @@ data class ServerData(
 ) {
     enum class Extension(val id: String) {
         ApiKeyAuthentication("apiKeyAuthentication"),
-        GetPodcastEpisode("getPodcastEpisode"),
         FormPost("formPost"),
         IndexBasedQueue("indexBasedQueue"),
+        PlaybackReport("playbackReport"),
         SongLyrics("songLyrics"),
-        Template("template"),
+        SonicSimilarity("sonicSimilarity"),
+        TopSongsByArtistId("topSongsByArtistId"),
         TranscodeOffset("transcodeOffset"),
         Transcoding("transcoding");
 
