@@ -56,9 +56,18 @@ class TrackClientImpl : TrackClient {
                 Streamable.Source.Http(
                     request = authenticatedRequest(
                         endpoint = "stream",
-                        parameters = listOf(
-                            "id" to streamable.id,
-                        ),
+                        parameters = buildList {
+                            add("id" to streamable.id)
+                            streamable.quality.let {
+                                if (it == Int.MAX_VALUE) {
+                                    add("format" to "raw")
+                                    add("maxBitRate" to "0")
+                                } else {
+                                    add("format" to "mp3")
+                                    add("maxBitRate" to it.toString())
+                                }
+                            }
+                        },
                         needsGet = true,
                     ).toNetworkRequest(),
                     type = Streamable.SourceType.Progressive,
@@ -90,10 +99,10 @@ class TrackClientImpl : TrackClient {
             val songsData = runRequest(
                 authenticatedRequest(
                     endpoint = "getRandomSongs",
-                    parameters = listOf(
-                        "size" to count.toString(),
-                        "genre" to genre,
-                    ).filter { it.second != null }.map { it.first to it.second!! },
+                    parameters = buildList {
+                        add("size" to count.toString())
+                        genre?.let { add("genre" to it) }
+                    }
                 ),
             ).parseAs<GetRandomSongsDto>().subsonicResponse
             if (songsData.status != "ok") {

@@ -64,13 +64,35 @@ data class SongDto(
             albumOrderNumber = track?.toLong(),
             albumDiscNumber = discNumber?.toLong(),
             isExplicit = explicitStatus in EXPLICIT_VALUES,
-            streamables = listOf(
-                Streamable.server(
-                    id = id,
-                    quality = bitRate ?: 0,
-                    title = "${bitRate ?: 0}kbps",
-                ),
-            ),
+            streamables = buildList {
+                add(
+                    Streamable.server(
+                        id = id,
+                        quality = Int.MAX_VALUE, // Quality is just for sorting
+                        title = if (contentType == "audio/flac") "FLAC" else "${bitRate ?: 0}kbps",
+                    ),
+                )
+                bitRate?.let {
+                    if (it > 320) {
+                        add(
+                            Streamable.server(
+                                id = id,
+                                quality = 320,
+                                title = "320kbps • Transcoding",
+                            ),
+                        )
+                    }
+                    if (it > 128) {
+                        add(
+                            Streamable.server(
+                                id = id,
+                                quality = 128,
+                                title = "128kbps • Transcoding",
+                            ),
+                        )
+                    }
+                }
+            },
             isRadioSupported = true,
             isLikeable = true,
             isShareable = true,
