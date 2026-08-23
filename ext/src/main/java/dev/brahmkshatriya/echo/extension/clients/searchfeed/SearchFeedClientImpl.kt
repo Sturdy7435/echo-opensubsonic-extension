@@ -2,23 +2,16 @@ package dev.brahmkshatriya.echo.extension.clients.searchfeed
 
 import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
-import dev.brahmkshatriya.echo.common.models.Album
-import dev.brahmkshatriya.echo.common.models.Artist
 import dev.brahmkshatriya.echo.common.models.Feed
 import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeedData
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Tab
-import dev.brahmkshatriya.echo.common.models.Track
-import dev.brahmkshatriya.echo.extension.dto.endpoints.SearchDto
-import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
-import dev.brahmkshatriya.echo.extension.service.request.RequestService.parseAs
-import dev.brahmkshatriya.echo.extension.service.request.RequestService.runRequest
-import dev.brahmkshatriya.echo.extension.service.request.RequestService.throwOnError
+import dev.brahmkshatriya.echo.extension.service.search.SearchService
+import dev.brahmkshatriya.echo.extension.service.search.SearchService.search
 
 class SearchFeedClientImpl : SearchFeedClient {
     override suspend fun loadSearchFeed(query: String): Feed<Shelf> {
-
-        val data: SearchResult = if (query.isBlank()) {
+        val data: SearchService.SearchResult = if (query.isBlank()) {
             search("", -1, -1, -1)
         } else {
             search(query, 20, 20, 20)
@@ -36,38 +29,4 @@ class SearchFeedClientImpl : SearchFeedClient {
             pagedData.toFeedData()
         }
     }
-
-    suspend fun search(
-        query: String,
-        trackCount: Int,
-        albumCount: Int,
-        artistCount: Int,
-    ): SearchResult {
-        val searchData = runRequest(
-            authenticatedRequest(
-                endpoint = "search3",
-                parameters = listOf(
-                    "query" to query,
-                    "songCount" to trackCount.toString(),
-                    "albumCount" to albumCount.toString(),
-                    "artistCount" to artistCount.toString(),
-                ),
-            ),
-        ).parseAs<SearchDto>().subsonicResponse
-        if (searchData.status != "ok") {
-            throwOnError(searchData.error)
-        }
-
-        return SearchResult(
-            tracks = searchData.searchResult3?.song?.map { it.toTrack() },
-            albums = searchData.searchResult3?.album?.map { it.toAlbum() },
-            artists = searchData.searchResult3?.artist?.map { it.toArtist() },
-        )
-    }
-
-    data class SearchResult(
-        val tracks: List<Track>?,
-        val albums: List<Album>?,
-        val artists: List<Artist>?,
-    )
 }
