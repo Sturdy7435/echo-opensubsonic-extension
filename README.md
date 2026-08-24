@@ -8,7 +8,7 @@ Allows streaming music from Subsonic-compatible servers such as Navidrome.
 
 - [x] Playlist editing
 - [ ] Genres in the home/search feed
-- [ ] Music streaming improvements
+- [x] Music streaming improvements
 - [ ] Better library feed
 - [ ] Feed appearance settings
 - [ ] Subsonic support
