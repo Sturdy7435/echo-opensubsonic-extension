@@ -55,11 +55,11 @@ data class SongDto(
                     crop = false,
                 )
             },
-            artists = artists?.map { it.toArtist() } ?: listOf(),
+            artists = artists?.map { it.toArtist() } ?: emptyList(),
             album = albumId?.let { album?.let { name -> Album(id = it, title = name) } },
             duration = duration?.let { (it * 1000).toLong() },
             releaseDate = year?.let { Date(year = it) },
-            genres = genres?.map { it.name } ?: listOf(),
+            genres = genres?.map { it.name } ?: emptyList(),
             isrc = isrc?.firstOrNull(),
             albumOrderNumber = track?.toLong(),
             albumDiscNumber = discNumber?.toLong(),

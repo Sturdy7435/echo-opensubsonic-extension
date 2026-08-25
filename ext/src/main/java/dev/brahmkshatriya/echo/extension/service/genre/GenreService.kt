@@ -29,7 +29,7 @@ object GenreService {
             throwOnError(genresData.error)
         }
 
-        return genresData.genres?.genre?.map { it.value } ?: listOf()
+        return genresData.genres?.genre?.map { it.value } ?: emptyList()
     }
 
     suspend fun getGenreTracks(genre: String, count: Int, offset: Int = 0): List<Track> {
@@ -47,7 +47,7 @@ object GenreService {
             throwOnError(tracksData.error)
         }
 
-        return tracksData.songsByGenre?.song?.map { it.toTrack() } ?: listOf()
+        return tracksData.songsByGenre?.song?.map { it.toTrack() } ?: emptyList()
     }
 
     suspend fun getGenreAlbums(genre: String, count: Int, offset: Int = 0): List<Album> {
@@ -66,7 +66,7 @@ object GenreService {
             throwOnError(albumsData.error)
         }
 
-        return albumsData.albumList2?.album?.map { it.toAlbum() } ?: listOf()
+        return albumsData.albumList2?.album?.map { it.toAlbum() } ?: emptyList()
     }
 
     fun createGenreFeed(genre: String): Feed<Shelf> {

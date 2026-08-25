@@ -136,7 +136,7 @@ class ArtistClientImpl : ArtistClient {
             // Create a List<Artist> from the artists inside each `artist` field of the elements of
             // `index`
             return artistsData.artists?.index?.flatMap { it.artist.orEmpty() }
-                ?.map { it.toArtist() } ?: listOf()
+                ?.map { it.toArtist() } ?: emptyList()
         }
     }
 }

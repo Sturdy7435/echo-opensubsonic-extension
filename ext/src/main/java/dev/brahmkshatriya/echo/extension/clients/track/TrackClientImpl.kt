@@ -103,7 +103,7 @@ class TrackClientImpl : TrackClient {
                 throwOnError(songsData.error)
             }
 
-            return songsData.randomSongs?.song?.map { it.toTrack() } ?: listOf()
+            return songsData.randomSongs?.song?.map { it.toTrack() } ?: emptyList()
         }
 
         suspend fun getSimilarTracks(track: Track, count: Int): List<Track> {
@@ -121,7 +121,7 @@ class TrackClientImpl : TrackClient {
                 throwOnError(tracksData.error)
             }
 
-            return tracksData.similarSongs2?.song?.map { it.toTrack() } ?: listOf()
+            return tracksData.similarSongs2?.song?.map { it.toTrack() } ?: emptyList()
         }
     }
 }

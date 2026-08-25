@@ -91,7 +91,7 @@ class AlbumClientImpl : AlbumClient {
                 throwOnError(albumListData.error)
             }
 
-            return albumListData.albumList2?.album?.map { it.toAlbum() } ?: listOf()
+            return albumListData.albumList2?.album?.map { it.toAlbum() } ?: emptyList()
         }
 
         @Suppress("unused")

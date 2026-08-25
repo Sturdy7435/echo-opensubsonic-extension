@@ -50,7 +50,7 @@ class PlaylistCombinedClientImpl : PlaylistCombinedClient {
             throwOnError(playlistData.error)
         }
 
-        return (playlistData.playlist!!.entry?.map { it.toTrack() } ?: listOf()).toFeed()
+        return (playlistData.playlist!!.entry?.map { it.toTrack() } ?: emptyList()).toFeed()
     }
 
     // There is nothing to show under the list of songs
@@ -264,7 +264,7 @@ class PlaylistCombinedClientImpl : PlaylistCombinedClient {
                 throwOnError(playlistsData.error)
             }
 
-            return playlistsData.playlists?.playlist?.map { it.toPlaylist() } ?: listOf()
+            return playlistsData.playlists?.playlist?.map { it.toPlaylist() } ?: emptyList()
         }
     }
 }

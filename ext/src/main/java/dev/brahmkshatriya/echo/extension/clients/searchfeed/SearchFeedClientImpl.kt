@@ -30,15 +30,15 @@ class SearchFeedClientImpl : SearchFeedClient {
         ) { tab ->
             val pagedData: PagedData.Single<Shelf> = when (tab?.id) {
                 "Tracks" -> PagedData.Single {
-                    data.tracks?.map { it.toShelf() as Shelf } ?: listOf()
+                    data.tracks?.map { it.toShelf() as Shelf } ?: emptyList()
                 }
 
                 "Albums" -> PagedData.Single {
-                    data.albums?.map { it.toShelf() as Shelf } ?: listOf()
+                    data.albums?.map { it.toShelf() as Shelf } ?: emptyList()
                 }
 
                 "Artists" -> PagedData.Single {
-                    data.artists?.map { it.toShelf() as Shelf } ?: listOf()
+                    data.artists?.map { it.toShelf() as Shelf } ?: emptyList()
                 }
 
                 "Genres" -> PagedData.Single {

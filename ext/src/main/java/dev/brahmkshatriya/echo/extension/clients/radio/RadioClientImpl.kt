@@ -33,7 +33,7 @@ class RadioClientImpl: RadioClient {
             throwOnError(radioData.error)
         }
 
-        return (radioData.similarSongs2?.song?.map { it.toTrack() } ?: listOf()).toFeed()
+        return (radioData.similarSongs2?.song?.map { it.toTrack() } ?: emptyList()).toFeed()
     }
 
     override suspend fun radio(

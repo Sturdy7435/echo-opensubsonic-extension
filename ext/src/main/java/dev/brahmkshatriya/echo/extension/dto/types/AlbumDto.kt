@@ -52,7 +52,7 @@ data class AlbumDto(
                     crop = false,
                 )
             },
-            artists = artists?.map { it.toArtist() } ?: listOf(),
+            artists = artists?.map { it.toArtist() } ?: emptyList(),
             trackCount = songCount,
             duration = duration?.times(1000),
             releaseDate = releaseData?.let {
