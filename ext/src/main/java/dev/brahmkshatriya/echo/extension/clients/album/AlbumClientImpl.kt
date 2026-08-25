@@ -9,14 +9,11 @@ import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetAlbumDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetAlbumListDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetArtistDto
+import dev.brahmkshatriya.echo.extension.service.feed.FeedUtils.concurrentFeed
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.parseAs
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.runRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.throwOnError
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
 
 class AlbumClientImpl : AlbumClient {
     override suspend fun loadAlbum(album: Album): Album {
@@ -64,21 +61,18 @@ class AlbumClientImpl : AlbumClient {
         if (otherAlbumsData.status != "ok") {
             throwOnError(otherAlbumsData.error)
         }
-        val otherAlbums: List<Album> =
-            otherAlbumsData.artist?.album?.map { it.toAlbum() } ?: listOf()
+        val otherAlbums = otherAlbumsData.artist?.album?.map { it.toAlbum() } ?: return null
 
-        return withContext(Dispatchers.IO) {
-            listOf(
-                async {
-                    Shelf.Lists.Items(
-                        id = "otherAlbums",
-                        title = "More from this artist",
-                        list = otherAlbums,
-                        type = Shelf.Lists.Type.Linear,
-                    )
-                },
-            ).awaitAll()
-        }.toFeed()
+        return concurrentFeed(
+            {
+                Shelf.Lists.Items(
+                    id = "otherAlbums",
+                    title = "More from this artist",
+                    list = otherAlbums,
+                    type = Shelf.Lists.Type.Linear,
+                )
+            },
+        )
     }
 
     companion object {

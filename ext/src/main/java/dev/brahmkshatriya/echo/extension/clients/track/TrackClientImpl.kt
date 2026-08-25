@@ -2,21 +2,17 @@ package dev.brahmkshatriya.echo.extension.clients.track
 
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.models.Feed
-import dev.brahmkshatriya.echo.common.models.Feed.Companion.toFeed
 import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetRandomSongsDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetSimilarSongsDto
+import dev.brahmkshatriya.echo.extension.service.feed.FeedUtils.concurrentFeed
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.parseAs
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.runRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.throwOnError
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.toNetworkRequest
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
 
 class TrackClientImpl : TrackClient {
     /*
@@ -80,18 +76,16 @@ class TrackClientImpl : TrackClient {
     }
 
     override suspend fun loadFeed(track: Track): Feed<Shelf> {
-        return withContext(Dispatchers.IO) {
-            listOf(
-                async {
-                    Shelf.Lists.Items(
-                        id = "similar",
-                        title = "Similar tracks",
-                        list = getSimilarTracks(track, 20),
-                        type = Shelf.Lists.Type.Linear,
-                    )
-                },
-            ).awaitAll()
-        }.toFeed()
+        return concurrentFeed(
+            {
+                Shelf.Lists.Items(
+                    id = "similar",
+                    title = "Similar tracks",
+                    list = getSimilarTracks(track, 20),
+                    type = Shelf.Lists.Type.Linear,
+                )
+            },
+        )
     }
 
     companion object {

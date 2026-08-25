@@ -11,14 +11,11 @@ import dev.brahmkshatriya.echo.extension.clients.track.TrackClientImpl.Companion
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetAlbumListDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetGenresDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetSongsByGenreDto
+import dev.brahmkshatriya.echo.extension.service.feed.FeedUtils.concurrentShelves
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.parseAs
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.runRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.throwOnError
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
 
 object GenreService {
     suspend fun getGenres(): List<String> {
@@ -73,55 +70,53 @@ object GenreService {
     }
 
     fun createGenreFeed(genre: String): Feed<Shelf> {
-        return PagedData.Single<Shelf> {
-            withContext(Dispatchers.IO) {
-                listOf(
-                    async {
-                        val tracks = getRandomTracks(20, genre)
-                        val pageSize = 20
-                        val tracksFull = PagedData.Continuous { continuation ->
-                            val contInt = continuation?.toIntOrNull() ?: 0
+        return PagedData.Single {
+            concurrentShelves(
+                {
+                    val tracks = getRandomTracks(20, genre)
+                    val pageSize = 20
+                    val tracksFull = PagedData.Continuous { continuation ->
+                        val contInt = continuation?.toIntOrNull() ?: 0
 
-                            val tracks: List<Shelf> =
-                                getGenreTracks(genre, pageSize, contInt)
-                                    .map { it.toShelf() }
+                        val tracks: List<Shelf> =
+                            getGenreTracks(genre, pageSize, contInt)
+                                .map { it.toShelf() }
 
-                            if (tracks.size < pageSize) Page(tracks, null)
-                            else Page(tracks, (contInt + pageSize).toString())
-                        }.toFeed()
+                        if (tracks.size < pageSize) Page(tracks, null)
+                        else Page(tracks, (contInt + pageSize).toString())
+                    }.toFeed()
 
-                        Shelf.Lists.Items(
-                            id = "tracks",
-                            title = "Tracks",
-                            list = tracks,
-                            more = tracksFull,
-                            type = Shelf.Lists.Type.Linear,
-                        )
-                    },
-                    async {
-                        val albums = getGenreAlbums(genre, 10, 0)
-                        val pageSize = 20
-                        val albumsFull = PagedData.Continuous { continuation ->
-                            val contInt = continuation?.toIntOrNull() ?: 0
+                    Shelf.Lists.Items(
+                        id = "tracks",
+                        title = "Tracks",
+                        list = tracks,
+                        more = tracksFull,
+                        type = Shelf.Lists.Type.Linear,
+                    )
+                },
+                {
+                    val albums = getGenreAlbums(genre, 10, 0)
+                    val pageSize = 20
+                    val albumsFull = PagedData.Continuous { continuation ->
+                        val contInt = continuation?.toIntOrNull() ?: 0
 
-                            val albums: List<Shelf> =
-                                getGenreAlbums(genre, pageSize, contInt)
-                                    .map { it.toShelf() }
+                        val albums: List<Shelf> =
+                            getGenreAlbums(genre, pageSize, contInt)
+                                .map { it.toShelf() }
 
-                            if (albums.size < pageSize) Page(albums, null)
-                            else Page(albums, (contInt + pageSize).toString())
-                        }.toFeed()
+                        if (albums.size < pageSize) Page(albums, null)
+                        else Page(albums, (contInt + pageSize).toString())
+                    }.toFeed()
 
-                        Shelf.Lists.Items(
-                            id = "albums",
-                            title = "Albums",
-                            list = albums,
-                            more = albumsFull,
-                            type = Shelf.Lists.Type.Linear,
-                        )
-                    },
-                ).awaitAll()
-            }
+                    Shelf.Lists.Items(
+                        id = "albums",
+                        title = "Albums",
+                        list = albums,
+                        more = albumsFull,
+                        type = Shelf.Lists.Type.Linear,
+                    )
+                },
+            )
         }.toFeed()
     }
 }
