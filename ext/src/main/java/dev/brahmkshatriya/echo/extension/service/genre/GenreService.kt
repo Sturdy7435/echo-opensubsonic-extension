@@ -72,54 +72,56 @@ object GenreService {
         return albumsData.albumList2?.album?.map { it.toAlbum() } ?: listOf()
     }
 
-    suspend fun createGenreFeed(genre: String): Feed<Shelf> {
-        return withContext(Dispatchers.IO) {
-            listOf(
-                async {
-                    val tracks = getRandomTracks(20, genre)
-                    val pageSize = 20
-                    val tracksFull = PagedData.Continuous { continuation ->
-                        val contInt = continuation?.toIntOrNull() ?: 0
+    fun createGenreFeed(genre: String): Feed<Shelf> {
+        return PagedData.Single<Shelf> {
+            withContext(Dispatchers.IO) {
+                listOf(
+                    async {
+                        val tracks = getRandomTracks(20, genre)
+                        val pageSize = 20
+                        val tracksFull = PagedData.Continuous { continuation ->
+                            val contInt = continuation?.toIntOrNull() ?: 0
 
-                        val tracks: List<Shelf> =
-                            getGenreTracks(genre, pageSize, contInt)
-                                .map { it.toShelf() }
+                            val tracks: List<Shelf> =
+                                getGenreTracks(genre, pageSize, contInt)
+                                    .map { it.toShelf() }
 
-                        if (tracks.size < pageSize) Page(tracks, null)
-                        else Page(tracks, (contInt + pageSize).toString())
-                    }.toFeed()
+                            if (tracks.size < pageSize) Page(tracks, null)
+                            else Page(tracks, (contInt + pageSize).toString())
+                        }.toFeed()
 
-                    Shelf.Lists.Items(
-                        id = "tracks",
-                        title = "Tracks",
-                        list = tracks,
-                        more = tracksFull,
-                        type = Shelf.Lists.Type.Linear,
-                    )
-                },
-                async {
-                    val albums = getGenreAlbums(genre, 10, 0)
-                    val pageSize = 20
-                    val albumsFull = PagedData.Continuous { continuation ->
-                        val contInt = continuation?.toIntOrNull() ?: 0
+                        Shelf.Lists.Items(
+                            id = "tracks",
+                            title = "Tracks",
+                            list = tracks,
+                            more = tracksFull,
+                            type = Shelf.Lists.Type.Linear,
+                        )
+                    },
+                    async {
+                        val albums = getGenreAlbums(genre, 10, 0)
+                        val pageSize = 20
+                        val albumsFull = PagedData.Continuous { continuation ->
+                            val contInt = continuation?.toIntOrNull() ?: 0
 
-                        val albums: List<Shelf> =
-                            getGenreAlbums(genre, pageSize, contInt)
-                                .map { it.toShelf() }
+                            val albums: List<Shelf> =
+                                getGenreAlbums(genre, pageSize, contInt)
+                                    .map { it.toShelf() }
 
-                        if (albums.size < pageSize) Page(albums, null)
-                        else Page(albums, (contInt + pageSize).toString())
-                    }.toFeed()
+                            if (albums.size < pageSize) Page(albums, null)
+                            else Page(albums, (contInt + pageSize).toString())
+                        }.toFeed()
 
-                    Shelf.Lists.Items(
-                        id = "albums",
-                        title = "Albums",
-                        list = albums,
-                        more = albumsFull,
-                        type = Shelf.Lists.Type.Linear,
-                    )
-                },
-            ).awaitAll()
+                        Shelf.Lists.Items(
+                            id = "albums",
+                            title = "Albums",
+                            list = albums,
+                            more = albumsFull,
+                            type = Shelf.Lists.Type.Linear,
+                        )
+                    },
+                ).awaitAll()
+            }
         }.toFeed()
     }
 }
