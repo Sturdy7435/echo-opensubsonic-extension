@@ -19,10 +19,8 @@ object FeedUtils {
         vararg tasks: suspend () -> Shelf?,
     ): List<Shelf> {
         return withContext(Dispatchers.IO) {
-            if (tasks.size == 1)
-                tasks.mapNotNull { it() }
-            else
-                tasks.map { async { it() } }.awaitAll().filterNotNull()
+            if (tasks.size == 1) tasks.mapNotNull { it() }
+            else tasks.map { async { it() } }.awaitAll().filterNotNull()
         }
     }
 
@@ -36,9 +34,13 @@ object FeedUtils {
         return concurrentShelves(*tasks).toFeed()
     }
 
+    /**
+     * Builds a feed from a paged continuous data source by loading shelves for each page,
+     * using the provided suspend callback to fetch items for the current offset.
+     */
     fun continuousFeed(
         pageSize: Int,
-        callback: suspend(offset: Int) -> List<Shelf>
+        callback: suspend (offset: Int) -> List<Shelf>,
     ): Feed<Shelf> {
         return PagedData.Continuous { continuation ->
             val contInt = continuation?.toIntOrNull() ?: 0
@@ -46,7 +48,7 @@ object FeedUtils {
 
             Page(
                 things,
-                if (things.size < pageSize) null else (contInt + pageSize).toString()
+                if (things.size < pageSize) null else (contInt + pageSize).toString(),
             )
         }.toFeed()
     }
