@@ -102,7 +102,7 @@ class TrackClientImpl : TrackClient {
                     parameters = buildList {
                         add("size" to count.toString())
                         genre?.let { add("genre" to it) }
-                    }
+                    },
                 ),
             ).parseAs<GetRandomSongsDto>().subsonicResponse
             if (songsData.status != "ok") {

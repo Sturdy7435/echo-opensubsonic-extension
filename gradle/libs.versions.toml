@@ -1,7 +1,7 @@
 [versions]
 echoCommon = "1.0.0"
 kotlin = "2.4.10"
-agp = "9.3.1"
+agp = "9.3.2"
 gradleShadow = "9.6.1"
 kotlinxCoroutinesCore = "1.11.0"
 desugar_jdk_libs = "2.1.5"
