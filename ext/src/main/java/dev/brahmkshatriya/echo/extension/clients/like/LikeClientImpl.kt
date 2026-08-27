@@ -6,10 +6,12 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetAlbumDto
 import dev.brahmkshatriya.echo.extension.dto.endpoints.GetSongDto
+import dev.brahmkshatriya.echo.extension.dto.endpoints.GetStarredDto
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.authenticatedRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.parseAs
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.runRequest
 import dev.brahmkshatriya.echo.extension.service.request.RequestService.throwOnError
+import dev.brahmkshatriya.echo.extension.service.search.SearchService.SearchResult
 
 class LikeClientImpl : LikeClient {
     override suspend fun likeItem(
@@ -71,6 +73,26 @@ class LikeClientImpl : LikeClient {
             }
 
             else -> return false
+        }
+    }
+
+    companion object {
+        suspend fun getStarred(): SearchResult {
+            val starredData = runRequest(
+                authenticatedRequest(
+                    endpoint = "getStarred2",
+                    parameters = listOf(),
+                ),
+            ).parseAs<GetStarredDto>().subsonicResponse
+            if (starredData.status != "ok") {
+                throwOnError(starredData.error)
+            }
+
+            return SearchResult(
+                tracks = starredData.starred2?.song?.map { it.toTrack() },
+                albums = starredData.starred2?.album?.map { it.toAlbum() },
+                artists = starredData.starred2?.artist?.map { it.toArtist() },
+            )
         }
     }
 }
