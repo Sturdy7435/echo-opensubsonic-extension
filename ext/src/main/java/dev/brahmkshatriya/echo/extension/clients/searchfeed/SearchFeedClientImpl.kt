@@ -10,19 +10,23 @@ import dev.brahmkshatriya.echo.extension.service.genre.GenreService.createGenreF
 import dev.brahmkshatriya.echo.extension.service.genre.GenreService.getGenres
 import dev.brahmkshatriya.echo.extension.service.search.SearchService
 import dev.brahmkshatriya.echo.extension.service.search.SearchService.search
+import dev.brahmkshatriya.echo.extension.service.session.SettingsSession
 
 class SearchFeedClientImpl : SearchFeedClient {
     override suspend fun loadSearchFeed(query: String): Feed<Shelf> {
-        val data: SearchService.SearchResult = if (query.isBlank()) {
-            search("", -1, -1, -1)
-        } else {
-            search(query, 20, 20, 20)
-        }
+        val data: SearchService.SearchResult
+        val genresData: List<String>
 
-        val genresData = if (query.isBlank()) {
-            getGenres()
+        if (query.isBlank()) {
+            data = search("", -1, -1, -1)
+            genresData = getGenres()
         } else {
-            getGenres().filter { it.contains(query.trim(), ignoreCase = true) }
+            val count = SettingsSession.searchResults
+
+            data = search(query, count, count, count)
+            genresData = getGenres().filter {
+                it.contains(query.trim(), ignoreCase = true)
+            }.take(count)
         }
 
         return Feed(
